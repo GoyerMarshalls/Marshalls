@@ -1,0 +1,3889 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║           GOYER MARSHAL APP                                  ║
+  ║           © 2026 Vandelinde Consulting BV                      ║
+  ║           Alle rechten voorbehouden.                         ║
+  ║                                                              ║
+  ║  Dit werk is auteursrechtelijk beschermd. Niets uit deze     ║
+  ║  applicatie mag worden verveelvoudigd, opgeslagen in een     ║
+  ║  geautomatiseerd gegevensbestand, of openbaar gemaakt, in    ║
+  ║  enige vorm of op enige wijze — hetzij elektronisch,         ║
+  ║  mechanisch, door fotokopieën, opnamen of op enige andere    ║
+  ║  manier — zonder voorafgaande schriftelijke toestemming van  ║
+  ║  Vandelinde Consulting BV.                              ║
+  ║                                                              ║
+  ║  Ontwikkeld voor de Goyer Golf & Country Club te Eemnes.    ║
+  ║  Versie: 1.3.0                                               ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a5c35">
+<meta name="copyright" content="© 2026 Vandelinde Consulting BV. Alle rechten voorbehouden.">
+<meta name="author" content="Vandelinde Consulting BV">
+<title>Goyer Marshals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gd:#1a5c35;--gm:#2d7a4f;--gl:#4a9c6c;--gp:#e1f5ee;
+  --gold:#c9a84c;--goldl:#f5e9b0;
+  --cr:#f5f2ec;--cd:#e8e2d6;
+  --wh:#ffffff;--td:#1a1a1a;--tm:#4a4a4a;--tl:#7a7a7a;
+  --red:#c0392b;--redl:#fadbd8;
+  --amber:#854f0b;--amberl:#faeeda;
+  --blue:#1565c0;--bluel:#e3f2fd;
+  --sh:0 2px 12px rgba(0,0,0,.10);--shsm:0 1px 6px rgba(0,0,0,.07);
+  --r:8px;--rl:14px;--hh:56px;--nh:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td);padding-bottom:calc(var(--nh) + env(safe-area-inset-bottom))}
+.hdr{background:var(--gd);position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);box-shadow:var(--sh)}
+.logo-t{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold)}
+.logo-s{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:rgba(200,230,200,.6);letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:-1px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:4px 9px;border-radius:20px}
+.uitbtn{background:none;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:4px 9px;border-radius:20px;cursor:pointer}
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nh);padding-bottom:env(safe-area-inset-bottom);background:var(--gd);display:flex;z-index:200;box-shadow:0 -2px 16px rgba(0,0,0,.2)}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:rgba(200,230,200,.4);font-family:'IBM Plex Sans',sans-serif;font-size:.5rem;font-weight:500;cursor:pointer;padding:6px 2px;letter-spacing:.02em;transition:color .15s;text-transform:uppercase}
+.ntab .ic{font-size:1.25rem;line-height:1;transition:transform .15s}
+.ntab.active{color:var(--gold)}
+.ntab.active .ic{transform:translateY(-1px)}
+.main{padding-top:calc(var(--hh) + 14px);padding-bottom:14px;min-height:100vh}
+.panel{display:none;padding:0 13px}
+.panel.active{display:block}
+.sh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;padding-top:2px}
+.st{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gd)}
+.ss{font-size:.68rem;color:var(--tl);font-family:'IBM Plex Mono',monospace}
+.card{background:var(--wh);border-radius:var(--rl);box-shadow:var(--shsm);margin-bottom:10px;overflow:hidden;border:1px solid rgba(0,0,0,.05)}
+.ch{padding:12px 15px 10px;border-bottom:1px solid var(--cd);display:flex;align-items:center;justify-content:space-between}
+.ct{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--gd)}
+.cb{padding:14px 15px}
+.srow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sc{background:var(--wh);border-radius:var(--rl);padding:12px 14px;box-shadow:var(--shsm);border:1px solid rgba(0,0,0,.05);border-left:4px solid var(--gl)}
+.sv{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gd);line-height:1}
+.sl{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.7rem;font-family:'IBM Plex Sans',sans-serif;font-weight:600;white-space:nowrap}
+.pg{background:var(--gp);color:var(--gd)}
+.pa{background:var(--amberl);color:var(--amber)}
+.pr{background:var(--redl);color:var(--red)}
+.pgr{background:#f0f0f0;color:#888}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg label{font-size:.62rem;font-weight:600;color:var(--tm);letter-spacing:.05em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.fg input,.fg select,.fg textarea{padding:11px 13px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.95rem;color:var(--td);background:var(--cr);width:100%;-webkit-appearance:none;resize:vertical}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--gl);background:var(--wh)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--cd)}
+.tog-row:last-child{border-bottom:none}
+.tl2{font-size:.9rem;font-weight:500;color:var(--td)}
+.tsub{font-size:.75rem;color:var(--tl);margin-top:2px}
+.tog{width:42px;height:24px;border-radius:12px;background:var(--cd);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none}
+.tog.on{background:var(--gm)}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.tog.on::after{transform:translateX(18px)}
+.btn{font-family:'IBM Plex Sans',sans-serif;font-size:.9rem;font-weight:600;padding:13px 20px;border-radius:var(--r);border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:7px;-webkit-appearance:none}
+.btn:active{transform:scale(.97)}
+.bp{background:var(--gm);color:#fff}.bp:hover{background:var(--gd)}
+.bg2{background:var(--cd);color:var(--td)}
+.bd{background:var(--red);color:#fff}
+.bf{width:100%}
+.bsm{padding:7px 13px;font-size:.76rem}
+.sos-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--redl);border:2px solid var(--red);border-radius:var(--rl);color:var(--red);font-size:.95rem;font-weight:700;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;margin-bottom:10px;letter-spacing:.02em}
+.sos-btn:active{background:#f7c1c1}
+.sess-bar{background:var(--gd);border-radius:var(--rl);padding:12px 15px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sess-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sess-t{color:rgba(255,255,255,.9);font-size:.9rem;font-weight:500}
+.sess-s{color:rgba(255,255,255,.5);font-size:.72rem;margin-top:1px;font-family:'IBM Plex Mono',monospace}
+.aed-bar{background:var(--amberl);border:1px solid #d4a057;border-radius:var(--r);padding:10px 13px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px}
+.aed-ic{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.aed-t{font-size:.78rem;color:var(--amber);line-height:1.5}
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--cd)}
+.log-item:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.log-t{font-size:.85rem;font-weight:600;color:var(--td)}
+.log-m{font-size:.76rem;color:var(--tl);margin-top:1px}
+.inc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.inc-btn{padding:10px 8px;border:1.5px solid var(--cd);border-radius:var(--r);background:var(--cr);font-size:.8rem;color:var(--tm);cursor:pointer;text-align:center;transition:all .15s;font-family:'IBM Plex Sans',sans-serif;line-height:1.3;font-weight:500}
+.inc-btn.sel{background:var(--gp);border-color:var(--gm);color:var(--gd);font-weight:600}
+.voice-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border:1.5px solid var(--cd);border-radius:var(--rl);background:var(--wh);font-size:.9rem;color:var(--tl);cursor:pointer;margin-bottom:10px;font-family:'IBM Plex Sans',sans-serif;font-weight:500;transition:all .2s}
+.voice-btn.rec{border-color:var(--red);color:var(--red);background:var(--redl)}
+.voice-btn.done{border-color:var(--gm);color:var(--gm);background:var(--gp)}
+.shift-row{background:var(--wh);border:1px solid rgba(0,0,0,.06);border-radius:var(--r);padding:11px 14px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.shift-day{font-size:.82rem;font-weight:600;color:var(--gd);width:72px;flex-shrink:0}
+.shift-time{font-size:.76rem;color:var(--tm);flex:1;font-family:'IBM Plex Mono',monospace;line-height:1.4}
+.shift-book{padding:9px 18px;border-radius:20px;border:1.5px solid var(--cd);background:transparent;font-size:.88rem;color:var(--tm);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:500;transition:all .15s;white-space:nowrap}
+.shift-book:hover{background:var(--gp);border-color:var(--gm);color:var(--gd)}
+.shift-book.geboekt{background:var(--gp);border-color:var(--gm);color:var(--gd);font-weight:600}
+.shift-book.comp{opacity:.4;cursor:not-allowed;pointer-events:none}
+.mrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--cd)}
+.mrow:last-child{border-bottom:none}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--bluel);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;font-family:'IBM Plex Mono',monospace}
+.mname{font-size:.88rem;font-weight:600;color:var(--td)}
+.mdet{font-size:.74rem;color:var(--tl);margin-top:1px}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-end;justify-content:center}
+.mo.open{display:flex}
+.mo-box{background:var(--wh);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:22px 20px 34px;max-height:92vh;overflow-y:auto}
+.mo-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--gd);margin-bottom:16px}
+.mo-close{float:right;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--tl);margin-top:-2px}
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:30px 24px;background:var(--gd)}
+.login-logo{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--gold);text-align:center;margin-bottom:4px}
+.login-sub{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:rgba(200,230,200,.55);letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:32px}
+.login-card{background:var(--wh);border-radius:var(--rl);padding:24px 20px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.login-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--gd);margin-bottom:14px;text-align:center}
+.pin-row{display:flex;gap:12px;justify-content:center;margin:14px 0 4px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--cd);transition:all .2s}
+.pin-dot.filled{background:var(--gm);border-color:var(--gm)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.numkey{padding:15px;border-radius:var(--r);border:1.5px solid var(--cd);background:var(--cr);font-size:1.2rem;font-weight:600;font-family:'IBM Plex Mono',monospace;cursor:pointer;transition:all .15s;text-align:center;color:var(--td)}
+.numkey:active{background:var(--gp);border-color:var(--gm)}
+.numkey.del{font-size:.8rem;color:var(--tl)}
+.numkey.empty{visibility:hidden;pointer-events:none}
+.toast{position:fixed;bottom:calc(var(--nh) + 14px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--gd);color:#fff;padding:10px 18px;border-radius:20px;font-size:.82rem;font-family:'IBM Plex Sans',sans-serif;z-index:700;opacity:0;transition:all .3s;white-space:nowrap;max-width:92vw;text-align:center;pointer-events:none}
+.toast.err{background:var(--red)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.divider{height:1px;background:var(--cd);margin:12px 0}
+.week-lbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 5px;display:flex;align-items:center;gap:8px}
+.week-lbl::after{content:'';flex:1;height:1px;background:var(--cd)}
+.cert-warn{background:var(--amberl);border-radius:var(--r);padding:9px 12px;font-size:.78rem;color:var(--amber);margin-top:8px;display:flex;align-items:center;gap:6px;border:1px solid #d4a057}
+.loading{text-align:center;padding:30px;color:var(--tl);font-family:'IBM Plex Mono',monospace;font-size:.78rem}
+.empty{text-align:center;padding:28px 20px;color:var(--tl);font-size:.85rem}
+.admin-lnk{text-align:center;margin-top:14px}
+.admin-lnk a{font-size:.75rem;color:var(--gold);font-family:'IBM Plex Mono',monospace;text-decoration:none;letter-spacing:.03em;font-weight:500}
+.admin-lnk a:hover{color:#e8c84a}
+.admin-lnk-sec{font-size:.72rem;color:var(--gold);font-family:'IBM Plex Mono',monospace;text-decoration:none;letter-spacing:.03em;opacity:.75}
+.admin-lnk-sec:hover{opacity:1}
+.hidden{display:none!important}
+.cal-lnk{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--blue);cursor:pointer;padding:10px 0;border-top:1px solid var(--cd);margin-top:8px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--cd);font-size:.85rem}
+.stat-row:last-child{border-bottom:none}
+.stat-lbl{color:var(--tl)}
+.stat-val{font-weight:600;color:var(--td)}
+/* ── Caddymaster bar ── */
+.caddy-t{font-size:.85rem;line-height:1.5}
+/* ── Dienst knop ── */
+.dienst-start-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px;border-radius:var(--rl);border:none;font-family:'IBM Plex Sans',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:8px;letter-spacing:.01em}
+.dienst-start-btn.start{background:var(--gm);color:#fff;box-shadow:0 4px 16px rgba(45,122,79,.3)}
+.dienst-start-btn.stop{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(192,57,43,.25)}
+.dienst-start-btn:active{transform:scale(.97)}
+.dienst-timer{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--tl);padding:4px 0 10px;letter-spacing:.04em}
+/* ── Noodknoppen ── */
+.nood-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.nood-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:var(--rl);font-family:'IBM Plex Sans',sans-serif;font-size:.95rem;font-weight:700;text-decoration:none;transition:all .15s;letter-spacing:.01em}
+.nood-btn:active{transform:scale(.96)}
+.nood-ic{font-size:1.1rem}
+.nood-112{background:var(--red);color:#fff;box-shadow:0 3px 12px rgba(192,57,43,.3)}
+.nood-goyer{background:var(--amberl);color:var(--amber);border:1.5px solid #d4a057}
+
+/* ── Diensten toggle ── */
+.dienst-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:12px;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--cd)}
+.dtog-btn{padding:10px;background:var(--cr);border:none;font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;font-weight:500;color:var(--tl);cursor:pointer;transition:all .15s}
+.dtog-btn.active{background:var(--gm);color:#fff;font-weight:600}
+.toon-eerder-btn{width:100%;padding:10px;background:none;border:1px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.8rem;color:var(--tl);cursor:pointer;margin-bottom:10px}
+@media (orientation:landscape) and (max-width:767px){
+  .dienst-toggle{display:none}
+  .toon-eerder-wrap-ls{display:none}
+}
+
+/* ── Mijn diensten ── compact */
+.slot-week{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;padding:8px 0 4px;display:flex;align-items:center;gap:8px}
+.slot-week::after{content:'';flex:1;height:1px;background:var(--cd)}
+.slot-row{background:var(--wh);border:1px solid rgba(0,0,0,.06);border-radius:var(--r);padding:10px 12px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.slot-row.bezet{border-left:3px solid var(--gl)}
+.slot-row.eigen{border-left:3px solid var(--gold);background:#fffdf5}
+.slot-row.verleden{opacity:.5}
+.slot-datum{font-size:.78rem;font-weight:600;color:var(--gd);width:26px;flex-shrink:0;text-align:center;line-height:1.2}
+.slot-dag{font-size:.55rem;color:var(--tl);text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.slot-tijd{font-size:.88rem;color:var(--tm);width:120px;flex-shrink:0;font-family:'IBM Plex Mono',monospace}
+.slot-naam{font-size:.88rem;color:var(--tl);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Dag-groep header (portrait alle-view) ── */
+.dag-hdr{background:var(--gp);border-radius:var(--r);padding:6px 12px;margin:10px 0 4px;display:flex;align-items:baseline;gap:8px}
+.dag-hdr-datum{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--gd)}
+.dag-hdr-dag{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--tl);text-transform:uppercase;letter-spacing:.05em}
+
+/* ── Week-grid (landscape) ── */
+.week-grid{display:none}
+@media (orientation:landscape) and (max-width:767px){
+  .hdr{display:none}
+  .bnav{display:none}
+  body{padding-bottom:0}
+  .main{padding-top:0;padding-bottom:0}
+  .panel{padding:4px 8px}
+  .diensten-portrait{display:none}
+  .week-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .wg-table{border-collapse:collapse;width:100%;min-width:520px}
+  .wg-th{font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-transform:uppercase;color:var(--tl);padding:6px 4px;text-align:center;border-bottom:2px solid var(--cd);white-space:nowrap}
+  .wg-th.vandaag{color:var(--gm);font-weight:700}
+  .wg-tijd{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--tl);padding:4px 6px;white-space:nowrap;border-right:1px solid var(--cd);vertical-align:middle}
+  .wg-cel{padding:3px 3px;vertical-align:top;border:1px solid rgba(0,0,0,.05);min-width:68px}
+  .wg-cel-inner{border-radius:5px;padding:6px 5px;font-size:.78rem;line-height:1.3;cursor:pointer;min-height:34px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:500}
+  .wg-cel-inner.vrij{background:var(--cr);color:var(--tl)}
+  .wg-cel-inner.vrij:hover{background:var(--gp);color:var(--gm)}
+  .wg-cel-inner.bezet{background:var(--gp);color:var(--gd);font-weight:600}
+  .wg-cel-inner.eigen{background:var(--goldl);color:#7a5a00;font-weight:700}
+  .wg-cel-inner.verleden{background:#f0f0f0;color:#aaa;font-style:italic}
+  .wg-cel-inner.leeg{background:none}
+  .wg-cel-inner.wg-beschikbaar{background:#fafafa;color:#ccc;font-size:.82rem;font-weight:400}
+  .wg-cel-inner.wg-boekbaar{background:var(--amberl);color:var(--amber);font-size:.82rem;font-weight:700;cursor:pointer}
+}
+@media (orientation:portrait) and (max-width:899px){
+  .diensten-portrait{display:block}
+  .week-grid{display:none}
+}
+@media (min-width:900px){
+  .diensten-portrait{display:none}
+  body{padding-bottom:calc(var(--nh) + env(safe-area-inset-bottom))}
+  .main{padding-top:calc(var(--hh) + 14px);padding-bottom:14px}
+  .panel{padding:12px 20px}
+  .week-grid{display:block}
+  .dienst-toggle{display:none}
+  .wg-table{border-collapse:separate;border-spacing:3px;width:100%;table-layout:fixed}
+  .wg-th{font-family:'IBM Plex Mono',monospace;font-size:.68rem;text-transform:uppercase;color:var(--tl);padding:8px 4px;text-align:center;border-bottom:2px solid var(--cd);white-space:nowrap;letter-spacing:.04em}
+  .wg-th.vandaag{color:var(--gm);font-weight:700}
+  .wg-tijd{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--tl);padding:4px 10px;white-space:nowrap;border-right:2px solid var(--cd);vertical-align:middle;width:58px;text-align:right}
+  .wg-cel{padding:0;vertical-align:top}
+  .wg-cel-inner{border-radius:6px;padding:6px 5px;font-size:.75rem;line-height:1.3;min-height:36px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans',sans-serif;word-break:break-word;transition:filter .1s}
+  .wg-cel-inner[onclick]{cursor:pointer}
+  .wg-cel-inner[onclick]:hover{filter:brightness(.93)}
+  .wg-cel-inner.wg-bezet{background:var(--gp);color:var(--gd);font-weight:600}
+  .wg-cel-inner.wg-beschikbaar{background:#fafafa;color:#ccc;font-size:.8rem;font-weight:400}
+  .wg-cel-inner.wg-wedstrijd{background:#fff0f0;color:var(--red);font-weight:600;font-size:.75rem}
+  .wg-cel-inner.wg-geblokkeerd{background:#f5f5f5;color:#bbb;font-size:.65rem;font-style:italic}
+  .wg-cel-inner.wg-leeg{background:#fafafa}
+  .wg-cel-inner.eigen{background:var(--goldl);color:#7a5a00;font-weight:700}
+  .wg-cel-inner.bezet{background:var(--gp);color:var(--gd);font-weight:500}
+  .wg-cel-inner.verleden{background:#f0f0f0;color:#aaa;font-style:italic}
+}
+
+/* ── Weekgrid cel klassen (universeel) ── */
+.wg-cel-inner.wg-bezet{background:var(--gp);color:var(--gd);font-weight:600}
+.wg-cel-inner.wg-beschikbaar{background:#fafafa;color:#ccc;font-size:.8rem;font-weight:400}
+.wg-cel-inner.wg-boekbaar{background:var(--amberl);color:var(--amber);font-size:.8rem;font-weight:700;cursor:pointer}
+.wg-cel-inner.wg-wedstrijd{background:#fff0f0;color:var(--red);font-weight:600;font-size:.75rem}
+.wg-cel-inner.wg-geblokkeerd{background:#f5f5f5;color:#bbb;font-size:.65rem;font-style:italic}
+.wg-cel-inner.wg-leeg{background:#fafafa}
+
+/* ── Flight tracker ── */
+.flight-item{background:var(--wh);border:1px solid rgba(0,0,0,.06);border-radius:var(--r);padding:9px 12px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.flight-item.fl-red{border-left:3px solid var(--red)}
+.flight-item.fl-amber{border-left:3px solid #d4a057}
+.flight-item.fl-green{border-left:3px solid var(--gl)}
+.flight-item.fl-gray{border-left:3px solid var(--cd)}
+.fi-naam{font-size:.82rem;font-weight:600;color:var(--td);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-meta{font-size:.7rem;color:var(--tl);font-family:'IBM Plex Mono',monospace;display:inline-flex;align-items:center}
+.fi-badge{font-size:.8rem;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.fi-red{background:var(--redl);color:var(--red)}
+.fi-amber{background:var(--amberl);color:var(--amber)}
+.fi-green{background:var(--gp);color:var(--gd)}
+.fi-gray{background:#f0f0f0;color:#888}
+.fi-bar{height:3px;background:var(--cd);border-radius:2px;margin-top:6px;position:relative;overflow:visible}
+.fi-fill{height:100%;border-radius:2px}
+.fi-marker{position:absolute;top:-4px;width:2px;height:11px;border-radius:1px;background:var(--tm);opacity:.5}
+.dash-sectie{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 5px;display:flex;align-items:center;gap:8px}
+.dash-sectie::after{content:'';flex:1;height:1px;background:var(--cd)}
+.knelpunt-card{background:var(--wh);border-radius:var(--rl);border:1px solid rgba(0,0,0,.06);padding:10px 12px;margin-bottom:7px}
+.knelpunt-card.kn-red{border-left:3px solid var(--red);border-radius:0 var(--rl) var(--rl) 0}
+.knelpunt-card.kn-amber{border-left:3px solid #d4a057;border-radius:0 var(--rl) var(--rl) 0}
+.kn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.kn-hole{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--gd)}
+.kn-tijd{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--tl)}
+.kn-body{font-size:.78rem;color:var(--tm);line-height:1.5}
+.kn-detail{font-size:.7rem;color:var(--tl);margin-top:3px;font-family:'IBM Plex Mono',monospace}
+.hole-popup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:flex-end;justify-content:center}
+.hole-popup-box{background:var(--wh);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:18px 16px 32px}
+.hole-popup-titel{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--gd);margin-bottom:2px}
+.hole-popup-sub{font-size:.78rem;color:var(--tl);margin-bottom:14px}
+.hole-grid-popup{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-bottom:14px}
+.hgbtn{padding:12px 4px;font-size:1rem;font-weight:600;border:1.5px solid var(--cd);border-radius:var(--r);background:var(--cr);color:var(--td);cursor:pointer;text-align:center;font-family:'IBM Plex Mono',monospace}
+.hgbtn:active{background:var(--gp);border-color:var(--gm)}
+.hgbtn.sel{background:var(--gp);border-color:var(--gm);color:var(--gd)}
+.hgbtn.cross{background:var(--bluel);border-color:var(--blue);color:var(--blue)}
+.slot-popup{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;display:flex;align-items:flex-end;justify-content:center}
+.slot-popup-box{background:var(--wh);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 20px 32px}
+.slot-popup-titel{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--gd);margin-bottom:4px}
+.slot-popup-sub{font-size:.8rem;color:var(--tl);margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-logo">Goyer</div>
+    <div class="login-sub">Marshal App · North &amp; South Course</div>
+    <div class="login-card">
+      <div class="login-title" id="loginTitle">Inloggen</div>
+
+      <!-- Naam + PIN -->
+      <div id="wrapNaam">
+        <div class="fg" style="margin-bottom:10px">
+          <label>Uw naam</label>
+          <select id="loginSelect" onchange="selectNaam(this)"><option value="">Selecteer...</option></select>
+        </div>
+        <div style="margin:10px 0 2px">
+          <label style="font-size:.62rem;font-weight:600;color:var(--tm);letter-spacing:.05em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Pincode</label>
+          <input type="password" id="pinNativeInput" inputmode="numeric" pattern="[0-9]*"
+            maxlength="4" autocomplete="off" placeholder="••••"
+            style="width:100%;margin-top:5px;padding:14px;text-align:center;letter-spacing:.5em;font-size:1.5rem;border:1.5px solid var(--cd);border-radius:var(--r);background:var(--cr);color:var(--td);font-family:'IBM Plex Mono',monospace;-webkit-appearance:none;box-sizing:border-box"
+            oninput="pinVanInput(this.value)"
+            onkeydown="if(event.key==='Enter')controleerPin()">
+        </div>
+        <div id="pinErr" style="text-align:center;font-size:.78rem;color:var(--red);min-height:16px;margin:6px 0 4px"></div>
+        <div class="admin-lnk" style="margin-top:14px;display:flex;justify-content:center;gap:20px">
+          <a href="#" onclick="toonAdminLogin('voorzitter');return false;">Commissievoorzitter</a>
+          <a href="#" onclick="toonAdminLogin('caddymaster');return false;">Caddymaster</a>
+        </div>
+        <div style="text-align:center;margin-top:8px">
+          <a href="#" onclick="toonPinVergeten();return false;" class="admin-lnk-sec">Pincode vergeten?</a>
+        </div>
+        <div style="text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--cd)">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--tl);letter-spacing:.04em">© 2026 Vandelinde Consulting BV</div>
+          <div id="loginVersie" style="font-family:'IBM Plex Mono',monospace;font-size:.54rem;color:var(--tl);opacity:.6;letter-spacing:.03em;margin-top:2px"></div>
+        </div>
+      </div>
+
+      <!-- Voorzitter / caddymaster -->
+      <div id="wrapAdmin" class="hidden">
+        <div class="login-title" id="adminLoginTitle" style="margin-bottom:14px;text-align:center">Voorzitter</div>
+        <div class="fg">
+          <label>Wachtwoord</label>
+          <input type="password" id="adminPwdInput" placeholder="Wachtwoord" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        </div>
+        <button class="btn bp bf" onclick="doAdminLogin()">Inloggen</button>
+        <div id="adminErr" style="text-align:center;font-size:.78rem;color:var(--red);margin-top:8px;min-height:18px"></div>
+        <button class="btn bg2 bf" style="margin-top:8px" onclick="terug()">← Terug</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" class="hidden">
+  <div class="hdr">
+    <div>
+      <div class="logo-t">Goyer Marshals</div>
+      <div class="logo-s" id="hdrSub">North &amp; South Course</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-badge" id="hdrNaam"></div>
+      <button class="uitbtn" onclick="uitloggen()">Uit</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- HOME -->
+    <div class="panel active" id="panelHome">
+      <div class="sh"><div class="ss" id="homeVersie">v1.3.4</div></div>
+
+      <!-- Noodknoppen compact -->
+      <div class="nood-row" id="noodRow" style="margin-bottom:10px">
+        <a class="nood-btn nood-112" href="tel:112" style="padding:10px">
+          <span class="nood-ic" style="font-size:1rem">🚨</span>
+          <span style="font-size:.85rem">112</span>
+        </a>
+        <a class="nood-btn nood-goyer" href="tel:0355393111" style="padding:10px">
+          <span class="nood-ic" style="font-size:1rem">📞</span>
+          <span style="font-size:.85rem">Goyer Nood #</span>
+        </a>
+      </div>
+
+      <!-- Caddymaster bericht + verzoeken voor marshal -->
+      <div id="caddymasterBar">
+        <div class="card">
+          <div class="ch"><div class="ct">Van de caddymaster</div></div>
+          <div class="cb caddy-t" id="caddymasterTekst" style="color:var(--tl);font-style:italic">Geen berichten</div>
+          <div id="verzoekLijstMarshal" style="padding:0 15px"></div>
+        </div>
+      </div>
+
+      <!-- Verzoeken kaart: alleen voor caddymaster -->
+      <div id="verzoekenBar" class="hidden">
+        <div class="card" style="margin-bottom:10px">
+          <div class="ch">
+            <div class="ct">Verzoeken</div>
+            <button onclick="openVerzoekFormulier()" style="font-size:.7rem;padding:4px 10px;border-radius:20px;border:1.5px solid var(--gm);background:var(--gp);color:var(--gd);cursor:pointer;font-weight:600;font-family:'IBM Plex Sans',sans-serif">+ Verzoek</button>
+          </div>
+          <div id="verzoekenLijst" class="cb" style="padding:8px"><div style="font-size:.8rem;color:var(--tl);font-style:italic;padding:4px">Geen actieve verzoeken</div></div>
+        </div>
+      </div>
+
+      <!-- Verzoek formulier (uitklapbaar) -->
+      <div id="verzoekInvoer" class="hidden" style="margin-bottom:10px">
+        <div class="card">
+          <div class="ch"><div class="ct">Nieuw verzoek</div></div>
+          <div class="cb" style="padding:12px">
+            <div id="verzoekMarshalInfo" style="font-size:.78rem;color:var(--tl);margin-bottom:8px;padding:6px 8px;background:var(--gp);border-radius:var(--r)">Bepalen wie dienst heeft...</div>
+            <textarea id="verzoekTekst" rows="3" placeholder="Bijv: Piet heeft een club verloren bij green 7, kun je even kijken?"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();stuurVerzoek();}"
+              style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;resize:none;background:var(--wh);color:var(--td);margin-bottom:8px"></textarea>
+            <div style="display:flex;gap:8px">
+              <button onclick="stuurVerzoek()" class="btn bp" style="flex:1;padding:10px">Verzenden</button>
+              <button onclick="sluitVerzoekFormulier()" class="btn bg2" style="padding:10px 14px">&#x2715;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meldingen vandaag + inline invoer -->
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Meldingen</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="toggleMeldInvoer('logboek')" id="btnOpenLogboek"
+              style="font-size:.85rem;padding:8px 16px;border-radius:20px;border:1.5px solid var(--gm);background:var(--gp);color:var(--gd);cursor:pointer;font-weight:600;font-family:'IBM Plex Sans',sans-serif">Logboek</button>
+            <button onclick="toggleMeldInvoer('incident')" id="btnOpenIncident"
+              style="font-size:.85rem;padding:8px 16px;border-radius:20px;border:1.5px solid var(--red);background:var(--redl);color:var(--red);cursor:pointer;font-weight:600;font-family:'IBM Plex Sans',sans-serif">Incident</button>
+          </div>
+        </div>
+
+        <!-- Logboek invoer (inline, uitklapbaar) -->
+        <div id="homeLogboekInvoer" class="hidden" style="padding:12px 15px;border-bottom:1px solid var(--cd);background:var(--gp)">
+          <div style="font-size:.78rem;font-weight:600;color:var(--gd);margin-bottom:8px">📋 Logboeknotitie</div>
+          <button class="voice-btn" id="voiceBtnL" onclick="toggleVoice('L')" style="margin-bottom:8px">🎤 <span id="voiceTxtL">Spraaknotitie</span></button>
+          <div id="voiceTranscriptL" class="hidden" style="background:var(--wh);border-radius:var(--r);padding:8px 10px;font-size:.8rem;color:var(--gd);margin-bottom:8px;border:1px solid var(--gl)"></div>
+          <textarea id="lNotitie" rows="2" placeholder="Bijv: green 7 beschadigd, buggypad 14 modderig..."
+            style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;resize:none;background:var(--wh);color:var(--td)"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button onclick="slaaLogboek()" class="btn bp" style="flex:1;padding:10px">Opslaan</button>
+            <button onclick="sluitMeldInvoer()" class="btn bg2" style="padding:10px 14px">✕</button>
+          </div>
+        </div>
+
+        <!-- Incident invoer (inline, uitklapbaar) -->
+        <div id="homeIncidentInvoer" class="hidden" style="padding:12px 15px;border-bottom:1px solid var(--cd);background:var(--redl)">
+          <div style="font-size:.78rem;font-weight:600;color:var(--red);margin-bottom:8px">⚠️ Incident melden</div>
+          <div class="inc-grid" id="incGrid" style="margin-bottom:8px">
+            <button class="inc-btn sel" data-type="slow_play" onclick="selInc(this)">🐢 Langzaam spel</button>
+            <button class="inc-btn" data-type="bunker" onclick="selInc(this)">⛳ Bunker</button>
+            <button class="inc-btn" data-type="kleding" onclick="selInc(this)">👕 Kleding</button>
+            <button class="inc-btn" data-type="buggy" onclick="selInc(this)">🚗 Buggy</button>
+            <button class="inc-btn" data-type="betaling" onclick="selInc(this)">💳 Niet betaald</button>
+            <button class="inc-btn" data-type="anders" onclick="selInc(this)">📝 Anders</button>
+          </div>
+          <input type="text" id="iSpeler" placeholder="Speler / flight (optioneel)"
+            style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;margin-bottom:6px;background:var(--wh);color:var(--td)">
+          <select id="iActie" style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;margin-bottom:6px;background:var(--wh);color:var(--td);-webkit-appearance:none">
+            <option value="herinnerd">Herinnerd / geadviseerd</option>
+            <option value="waarschuwing">Waarschuwing gegeven</option>
+            <option value="caddiemaster">Gemeld bij caddymaster</option>
+            <option value="geescaleerd">Geëscaleerd naar hoofd-marshal</option>
+            <option value="geen">Geen actie — alleen genoteerd</option>
+          </select>
+          <button class="voice-btn" id="voiceBtnI" onclick="toggleVoice('I')" style="margin-bottom:6px">🎤 <span id="voiceTxtI">Spraaknotitie</span></button>
+          <div id="voiceTranscriptI" class="hidden" style="background:var(--wh);border-radius:var(--r);padding:8px 10px;font-size:.8rem;color:var(--td);margin-bottom:6px;border:1px solid var(--red)"></div>
+          <textarea id="iNotitie" rows="2" placeholder="Toelichting..."
+            style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;resize:none;background:var(--wh);color:var(--td)"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button onclick="slaaIncident()" style="flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">Incident opslaan</button>
+            <button onclick="sluitMeldInvoer()" class="btn bg2" style="padding:10px 14px">✕</button>
+          </div>
+        </div>
+
+        <div class="cb" id="recentMeld"><div class="caddy-t" style="color:var(--tl);font-style:italic">Geen meldingen vandaag</div></div>
+      </div>
+    </div>
+
+    <!-- DIENSTEN -->
+    <div class="panel hidden" id="panelDiensten">
+      <div class="sh"><div class="st">Diensten</div><div class="ss">Seizoen 2026</div></div>
+      <div class="dienst-toggle">
+        <button class="dtog-btn active" id="dtogMijn" onclick="setDienstView('mijn')">Mijn diensten</button>
+        <button class="dtog-btn" id="dtogAlle" onclick="setDienstView('alle')">Alle diensten</button>
+      </div>
+      <!-- Portrait: lijst -->
+      <div class="diensten-portrait">
+        <div id="dienstenLijst"><div class="loading">Laden...</div></div>
+        <div id="toonEerderWrap" class="hidden">
+          <button class="toon-eerder-btn" onclick="toggleEerder()">&#8593; Toon eerdere diensten</button>
+        </div>
+      </div>
+      <!-- Landscape: weekgrid -->
+      <div class="week-grid" id="weekGrid"><div class="loading">Laden...</div></div>
+    </div>
+
+    <!-- PROFIEL -->
+    <div class="panel hidden" id="panelProfiel">
+      <div class="sh"><div class="st">Mijn profiel</div></div>
+      <div class="card">
+        <div class="ch"><div class="ct" id="profNaam">—</div><span class="pill pg">Actief</span></div>
+        <div class="cb">
+          <div class="fg"><label>Telefoon</label><input type="tel" id="profTel" placeholder="+31 6 ..."></div>
+          <div class="fg"><label>E-mailadres</label><input type="email" id="profEmail" placeholder="naam@email.nl"></div>
+          <div class="divider"></div>
+          <div class="fg" style="margin-top:2px"><label>Datum laatste AED/EHBO training</label><input type="date" id="aedDatum" onchange="berekenAedStatus(this.value);checkAedExpiry(this.value)"></div>
+          <div id="aedStatusCard" style="border-radius:var(--r);padding:10px 13px;margin-bottom:4px;display:flex;align-items:center;gap:10px;border:1.5px solid var(--cd);background:var(--cr)">
+            <div id="aedStatusIc" style="font-size:1.3rem;flex-shrink:0">❓</div>
+            <div>
+              <div id="aedStatusLabel" style="font-size:.82rem;font-weight:600;color:var(--tl)">AED / EHBO certificering</div>
+              <div id="aedTxt" style="font-size:.75rem;color:var(--tl);margin-top:1px">Geen datum ingevuld</div>
+            </div>
+          </div>
+          <div id="aedWarn" class="hidden cert-warn">⚠️ <span id="aedWarnTxt"></span></div>
+          <button class="btn bp bf" style="margin-top:4px" onclick="slaaProfiel()">Opslaan</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Statistieken 2025</div></div>
+        <div class="cb" id="profStats"><div class="loading">Laden...</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">PIN wijzigen</div></div>
+        <div class="cb">
+          <div class="fg"><label>Nieuwe PIN (4 cijfers)</label><input type="password" id="nieuwPin" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+          <div class="fg"><label>Bevestig nieuwe PIN</label><input type="password" id="bevestigPin" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+          <button class="btn bp bf" onclick="wijzigPin()">PIN wijzigen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="panel hidden" id="panelAdmin">
+      <div class="sh"><div class="st">Admin</div><div class="ss">Voorzitter</div></div>
+      <div id="seizoenBtnWrap" class="hidden"><div class="card" style="margin-bottom:10px"><div class="ch"><div class="ct">Seizoensbeheer</div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openSeizoenAanmaken()">+ Nieuw seizoen</button><button class="btn bg2 bsm" onclick="openMo('moSlotAdd')">+ Slot</button></div></div></div></div>
+      <div class="srow">
+        <div class="sc"><div class="sv" id="aMarsh">—</div><div class="sl">Actieve marshals</div></div>
+        <div class="sc"><div class="sv" id="aAed">—</div><div class="sl">AED gecertificeerd</div></div>
+        <div class="sc"><div class="sv" id="aVerl">—</div><div class="sl">Verloopt ≤30d</div></div>
+        <div class="sc"><div class="sv" id="aMeld">—</div><div class="sl">Meldingen seizoen</div></div>
+      </div>
+
+      <!-- Algoritme parameters -->
+      <div class="card" id="algCard" style="margin-bottom:10px">
+        <div class="ch"><div class="ct">Algoritme parameters</div><span class="pill pgr" id="paramStatusPill">Actueel</span></div>
+        <div class="cb" style="padding:10px">
+          <div id="paramTabel" style="margin-bottom:10px"></div>
+          <button class="btn bp bsm" onclick="laadParamVoorstel()" style="margin-right:6px">📊 Analyseer data</button>
+          <button class="btn bg2 bsm" onclick="toonParamRapport()">📄 Rapport</button>
+        </div>
+      </div>
+
+      <!-- Startlijst analyse geschiedenis -->
+      <div class="card" style="margin-bottom:10px">
+        <div class="ch"><div class="ct">Startlijst analyse</div><span class="pill pgr" id="analyseDataPill">—</span></div>
+        <div class="cb" id="analysePanel" style="padding:10px">
+          <div class="empty">Klik op "Analyseer data" om de laatste metingen te verwerken</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ct">Marshal overzicht</div><span id="marshalToevoegenBtn"><button class="btn bp bsm" onclick="openMo('moMarshalAdd')">+ Toevoegen</button></span></div>
+        <div class="cb" id="marshalLijst"><div class="loading">Laden...</div></div>
+      </div>
+      <!-- Slot beheer verplaatst naar Diensten -->
+      <div class="card">
+        <div class="ch"><div class="ct">Alle meldingen</div><span class="pill pgr">Huidig seizoen</span></div>
+        <div class="cb" id="alleMeld"><div class="loading">Laden...</div></div>
+      </div>
+    </div>
+
+    <!-- FLIGHT TRACKER -->
+    <div class="panel hidden" id="panelTracker">
+      <div class="sh"><div class="st">Flight tracker</div><div class="ss" id="trackerKlok">--:--</div></div>
+
+      <!-- Zoekbalk -->
+      <div style="position:relative;margin-bottom:10px">
+        <input type="text" id="trackerZoek" placeholder="Zoek op naam..." oninput="filterTracker(this.value)"
+          style="width:100%;padding:9px 12px 9px 34px;border:1px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;background:var(--cr);color:var(--td)">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tl);font-size:16px">🔍</span>
+        <button id="trackerZoekWis" onclick="wisZoek()" class="hidden"
+          style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;color:var(--tl)">✕</button>
+      </div>
+
+      <!-- Pre-game analyse — zichtbaar voor iedereen -->
+      <div id="trackerPreGame"></div>
+
+      <!-- Marshal view: positie invoeren -->
+      <div id="trackerMarshal">
+        <div class="card" style="margin-bottom:10px">
+          <div class="ch" onclick="togglePositie()" style="cursor:pointer;user-select:none">
+            <div class="ct">Positie melden</div>
+            <div style="display:flex;align-items:center;gap:6px"><span class="pill pgr" id="trackerDatum"></span><span id="positieToggleIco" style="font-size:.75rem;color:var(--tl)">▲</span></div>
+          </div>
+          <div class="cb" id="positieBody" style="padding:10px">
+            <div style="font-size:.8rem;color:var(--tl);margin-bottom:10px">Tik op een flight om de huidige hole bij te werken.</div>
+            <div id="trackerFlightLijst"><div class="loading">Laden...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caddymaster/Admin view: dashboard -->
+      <div id="trackerDashboard" class="hidden">
+        <!-- Upload -->
+        <div class="card" style="margin-bottom:10px">
+          <div class="ch"><div class="ct">Startlijst</div><span class="pill pgr" id="uploadDatumPill"></span></div>
+          <div class="cb" style="padding:10px">
+            <button class="btn bp bf" onclick="document.getElementById('csvFileInput').click()">📂 CSV uploaden</button>
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="verwerkCSVUpload(this)">
+            <div id="uploadFeedback" style="font-size:.78rem;color:var(--tl);margin-top:8px"></div>
+          </div>
+        </div>
+        <!-- Pace of play instellingen -->
+        <div class="card" id="paceCard" style="margin-bottom:10px">
+          <div class="ch"><div class="ct">Pace of play</div></div>
+          <div class="cb" style="padding:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div class="fg"><label>Par 3 (min)</label><input type="number" id="popPar3" value="11" min="8" max="20"></div>
+              <div class="fg"><label>Par 4 (min)</label><input type="number" id="popPar4" value="13" min="10" max="25"></div>
+              <div class="fg"><label>Par 5 (min)</label><input type="number" id="popPar5" value="16" min="12" max="28"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Waarschuwingen real-time -->
+        <div id="dashWaarschuwingen"></div>
+        <!-- Alle flights -->
+        <div class="card">
+          <div class="ch"><div class="ct">Alle flights vandaag</div><span class="pill pgr" id="dashFlightCount"></span></div>
+          <div class="cb" id="dashFlightLijst" style="padding:8px"><div class="loading">Laden...</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bnav">
+    <button class="ntab active" id="ntHome" onclick="showPanel('Home')"><span class="ic">🏠</span>Home</button>
+    <button class="ntab" id="ntDiensten" onclick="showPanel('Diensten')"><span class="ic">📅</span>Diensten</button>
+    <button class="ntab" id="ntTracker" onclick="showPanel('Tracker')"><span class="ic">🗺️</span>Tracker</button>
+    <button class="ntab" id="ntProfiel" onclick="showPanel('Profiel')"><span class="ic">👤</span>Profiel</button>
+    <button class="ntab hidden" id="ntAdmin" onclick="showPanel('Admin')"><span class="ic">⚙️</span>Admin</button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="moSOS">
+  <div class="mo-box">
+    <button class="mo-close" onclick="sluitMo('moSOS')">✕</button>
+    <div class="mo-title" style="color:var(--red)">🚨 Noodprocedure</div>
+    <div style="background:var(--redl);border-radius:var(--r);padding:13px;margin-bottom:12px">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--red);margin-bottom:4px">Bel 112</div>
+      <div style="font-size:.85rem;color:var(--red)">Goyer Nood Telefoon: <strong>035 539 3111</strong></div>
+    </div>
+    <div style="background:var(--amberl);border-radius:var(--r);padding:12px;margin-bottom:12px;border:1px solid #d4a057">
+      <div style="font-size:.85rem;font-weight:700;color:var(--amber);margin-bottom:3px">⚠️ BELANGRIJK</div>
+      <div style="font-size:.83rem;color:var(--amber)">Vermeld dat de Goyer in <strong>Laren</strong> ligt, NIET Eemnes. Dit verkort de aanrijtijd aanzienlijk.</div>
+    </div>
+    <div style="font-size:.85rem;color:var(--tm);line-height:1.7">
+      <strong>AED locaties:</strong><br>• Op uw marshalbuggy<br>• In de hal van het clubhuis<br><br>
+      <strong>Schuilplaatsen onweer:</strong><br>
+      • Startershuisje bij tee hole 1<br>• Schuilhut bij tee hole 4<br>
+      • Greenkeepersloods bij tee hole 5 &amp; 16<br>• Toiletgebouw bij tee hole 5 &amp; 16<br>
+      • Clubhuis bij tee hole 10<br>• Schuilhut bij tee hole 12<br><br>
+      <strong>Sirenecodes:</strong><br>• 1 lange toon = spel onmiddellijk stoppen<br>• 2 tonen = spel hervatten
+    </div>
+    <button class="btn bd bf" style="margin-top:16px" onclick="sluitMo('moSOS')">Sluiten</button>
+  </div>
+</div>
+
+<div class="mo" id="moMarshalAdd">
+  <div class="mo-box">
+    <button class="mo-close" onclick="sluitMo('moMarshalAdd')">✕</button>
+    <div class="mo-title">Marshal toevoegen</div>
+    <div class="fg"><label>Volledige naam</label><input type="text" id="addNaam" placeholder="Voor- en achternaam"></div>
+    <div class="fg"><label>Telefoon</label><input type="tel" id="addTel" placeholder="+31 6 ..."></div>
+    <div class="fg"><label>E-mailadres</label><input type="email" id="addEmail" placeholder="naam@email.nl"></div>
+    <div class="fg"><label>AED/EHBO gecertificeerd</label>
+      <select id="addAed"><option value="false">Nee</option><option value="true">Ja</option></select>
+    </div>
+    <div class="fg"><label>Datum AED/EHBO training</label><input type="date" id="addAedDat"></div>
+    <div style="background:var(--gp);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;font-size:.8rem;color:var(--gm)">
+      ℹ️ Een tijdelijke PIN wordt automatisch gegenereerd en getoond na opslaan.
+    </div>
+    <button class="btn bp bf" onclick="voegMarshalToe()">Marshal toevoegen</button>
+  </div>
+</div>
+
+<div class="mo" id="moPinToon">
+  <div class="mo-box" style="text-align:center">
+    <div class="mo-title" style="text-align:center">✅ Marshal aangemaakt</div>
+    <div style="font-size:.88rem;color:var(--tm);margin-bottom:6px">Tijdelijke PIN voor <strong id="pinNaam"></strong>:</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:2.8rem;font-weight:700;color:var(--gd);letter-spacing:.25em;margin:16px 0" id="pinCode">—</div>
+    <div style="font-size:.78rem;color:var(--tl);margin-bottom:16px">Geef deze PIN door aan de marshal.<br>Ze kunnen hem zelf wijzigen via Profiel.</div>
+    <button class="btn bp bf" onclick="sluitMo('moPinToon')">Sluiten</button>
+  </div>
+</div>
+
+<div class="mo" id="moSlotAdd">
+  <div class="mo-box">
+    <button class="mo-close" onclick="sluitMo('moSlotAdd')">✕</button>
+    <div class="mo-title">Dienst slot toevoegen</div>
+    <div class="fg"><label>Datum</label><input type="date" id="slotDatum"></div>
+    <div class="fr">
+      <div class="fg"><label>Begintijd</label><input type="time" id="slotStart" value="10:00"></div>
+      <div class="fg"><label>Eindtijd</label><input type="time" id="slotEind" value="14:00"></div>
+    </div>
+    <div class="fg"><label>Max. marshals</label><input type="number" id="slotMax" value="2" min="1" max="10"></div>
+    <div class="tog-row" style="margin-bottom:14px">
+      <div><div class="tl2">Wedstrijddag</div><div class="tsub">Marshals worden niet ingepland</div></div>
+      <button class="tog" id="togComp" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <button class="btn bp bf" onclick="voegSlotToe()">Slot opslaan</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const APP_VERSIE = '1.3.0';
+const SBU = 'https://tjmnzxjgfdstfqonghvs.supabase.co';
+const SBK = 'sb_publishable_GEaiWLLG5asArBHG177YJg_t9G0t6wd';
+const ADMIN_PWD = 'GM2026';
+const CADDY_PWD = 'GM2026';
+const ZWAKKE_PINS = new Set(['0000','1111','2222','3333','4444','5555','6666','7777','8888','9999','1234','2345','3456','4567','5678','6789','7890','9876','8765','4321','1212','2121','1010','0101','2024','2025','2026']);
+
+// ─── STATE ────────────────────────────────────────────────
+let huidigeMarshalId = null;
+let huidigeMarshalNaam = '';
+let isAdmin = false;
+let isCaddymaster = false;
+let pinBuffer = '';
+// pinBuffer vervangen door native input
+let selectedIncType = 'slow_play';
+let voiceRec = null;
+let voiceActive = false;
+let sessionStartTime = null;
+
+// ─── SUPABASE ─────────────────────────────────────────────
+async function sbFetch(path, opts={}) {
+  let r;
+  try {
+    r = await fetch(SBU+'/rest/v1/'+path, {
+      method: opts.method||'GET',
+      headers: {
+        'apikey': SBK,
+        'Authorization': 'Bearer '+SBK,
+        'Content-Type': 'application/json',
+        'Prefer': opts.prefer||'return=representation',
+        ...(opts.headers||{})
+      },
+      body: opts.body != null ? JSON.stringify(opts.body) : undefined
+    });
+  } catch(e) {
+    throw new Error('Netwerkfout: '+e.message);
+  }
+  if (!r.ok) {
+    let t=''; try{t=await r.text();}catch(_){}
+    let msg=t; try{const j=JSON.parse(t);msg=j.message||j.error||t;}catch(_){}
+    throw new Error(msg||'HTTP '+r.status);
+  }
+  if (r.status===204) return null;
+  const txt = await r.text();
+  if (!txt) return null;
+  try{return JSON.parse(txt);}catch(_){return null;}
+}
+
+// Haal alle rijen op via paginering (batches van 1000) — voor tabellen > 1000 rijen
+async function sbGAll(t, q) {
+  const PAGE = 1000;
+  let alle = [], offset = 0;
+  while(true) {
+    const batch = await sbFetch(t+'?'+q+'&limit='+PAGE+'&offset='+offset, {
+      headers: { 'Range-Unit': 'items', 'Range': offset+'-'+(offset+PAGE-1), 'Prefer': 'count=none' }
+    });
+    if(!batch || !batch.length) break;
+    alle = alle.concat(batch);
+    if(batch.length < PAGE) break;
+    offset += PAGE;
+  }
+  return alle;
+}
+const sbG = (t,q='') => sbFetch(t+'?'+q);
+const sbP = (t,b) => sbFetch(t, {method:'POST', body:b});
+const sbPa = (t,q,b) => sbFetch(t+'?'+q, {method:'PATCH', body:b, prefer:'return=representation'});
+const sbD = (t,q) => sbFetch(t+'?'+q, {method:'DELETE', prefer:'return=minimal'});
+const sbU = (t,b,q) => sbFetch(t+'?'+q, {method:'PATCH', body:b, prefer:'return=representation'});
+
+// ─── PIN CRYPTO ───────────────────────────────────────────
+function randomSalt(){
+  const b=new Uint8Array(16); crypto.getRandomValues(b);
+  return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function hashPin(pin,salt){
+  const enc=new TextEncoder();
+  const km=await crypto.subtle.importKey('raw',enc.encode(pin),{name:'PBKDF2'},false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},km,256);
+  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function maakPinHash(pin){
+  const salt=randomSalt(); const hash=await hashPin(pin,salt); return salt+'$'+hash;
+}
+async function verifieerPin(pin,opgeslagen){
+  if(!opgeslagen||!opgeslagen.includes('$')) return false;
+  const [salt,hash]=opgeslagen.split('$');
+  return (await hashPin(pin,salt))===hash;
+}
+function genereerPin(){
+  let pin;
+  do {
+    const b=new Uint8Array(2); crypto.getRandomValues(b);
+    pin=String(((b[0]<<8)|b[1])%10000).padStart(4,'0');
+  } while(ZWAKKE_PINS.has(pin));
+  return pin;
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+function toast(msg, err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(err?' err':'');
+  requestAnimationFrame(()=>{ t.classList.add('show'); });
+  setTimeout(()=>{ t.classList.remove('show'); },3000);
+}
+
+// ─── MODAL ────────────────────────────────────────────────
+function openMo(id){ document.getElementById(id).classList.add('open'); }
+function sluitMo(id){ document.getElementById(id).classList.remove('open'); }
+
+// ─── LOGIN ────────────────────────────────────────────────
+async function laadMarshalsLogin(){
+  try {
+    const lijst = await sbG('marshals','select=id,naam&order=naam');
+    const sel = document.getElementById('loginSelect');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">Selecteer...</option>';
+    (lijst||[]).forEach(m => {
+      const o=document.createElement('option'); o.value=m.id; o.textContent=m.naam; sel.appendChild(o);
+    });
+    const vEl = document.getElementById('loginVersie');
+    if(vEl) vEl.textContent = 'v'+APP_VERSIE;
+    bouwNumpad();
+  } catch(e){ console.error('Marshals laden mislukt:',e); toast('Kan marshals niet laden: '+e.message, true); }
+}
+
+function selectNaam(sel){
+  pinBuffer=''; updatePinDots();
+  document.getElementById('pinErr').textContent='';
+  if(sel.value){
+    huidigeMarshalId = sel.value;
+    huidigeMarshalNaam = sel.options[sel.selectedIndex].text;
+    const inp = document.getElementById('pinNativeInput');
+    if(inp){ inp.value=''; inp.focus(); }
+  } else {
+    huidigeMarshalId = null;
+    huidigeMarshalNaam = '';
+  }
+}
+
+function toonAdminLogin(rol){
+  document.getElementById('wrapNaam').classList.add('hidden');
+  document.getElementById('wrapAdmin').classList.remove('hidden');
+  document.getElementById('adminLoginTitle').textContent = rol==='caddymaster' ? 'Caddymaster' : 'Commissievoorzitter';
+  document.getElementById('wrapAdmin').dataset.rol = rol||'voorzitter';
+  document.getElementById('loginTitle').textContent = '';
+}
+
+function terug(){
+  document.getElementById('wrapNaam').classList.remove('hidden');
+  document.getElementById('wrapAdmin').classList.add('hidden');
+  document.getElementById('loginTitle').textContent = 'Inloggen';
+  document.getElementById('adminErr').textContent='';
+  document.getElementById('wrapAdmin').dataset.rol='voorzitter';
+  document.getElementById('adminPwdInput').value='';
+  pinBuffer=''; updatePinDots();
+}
+
+async function controleerPin(){
+  if(!huidigeMarshalId){
+    toast('Selecteer eerst uw naam', true);
+    pinBuffer=''; updatePinDots();
+    return;
+  }
+  try {
+    const data = await sbG('marshals','select=id,naam,pin_hash&id=eq.'+huidigeMarshalId);
+    if(!data||!data[0]){ toast('Marshal niet gevonden',true); pinBuffer=''; updatePinDots(); return; }
+    const ok = await verifieerPin(pinBuffer, data[0].pin_hash);
+    if(ok){
+      localStorage.setItem('marshal_id', huidigeMarshalId);
+      localStorage.setItem('marshal_naam', huidigeMarshalNaam);
+      localStorage.setItem('is_admin','false');
+      localStorage.setItem('is_caddymaster','false');
+      pinBuffer=''; updatePinDots();
+      startApp(false, false);
+    } else {
+      document.getElementById('pinErr').textContent='Onjuiste PIN, probeer opnieuw';
+      pinBuffer=''; updatePinDots();
+      setTimeout(()=>{ document.getElementById('pinErr').textContent=''; },2000);
+    }
+  } catch(e){ toast('Fout: '+e.message,true); pinBuffer=''; updatePinDots(); }
+}
+
+async function doAdminLogin(){
+  const pwd=document.getElementById('adminPwdInput').value;
+  const rol=document.getElementById('wrapAdmin').dataset.rol||'voorzitter';
+  const isVoorzitter = rol==='voorzitter' && pwd===ADMIN_PWD;
+  const isCaddy = rol==='caddymaster' && pwd===CADDY_PWD;
+  if(isVoorzitter || isCaddy){
+    huidigeMarshalId=null;
+    huidigeMarshalNaam = isVoorzitter ? 'Voorzitter' : 'Caddymaster';
+    localStorage.setItem('marshal_id', isVoorzitter ? 'admin' : 'caddymaster');
+    localStorage.setItem('marshal_naam', huidigeMarshalNaam);
+    localStorage.setItem('is_admin', isVoorzitter ? 'true' : 'false');
+    localStorage.setItem('is_caddymaster', isCaddy ? 'true' : 'false');
+    startApp(isVoorzitter, isCaddy);
+  } else {
+    document.getElementById('adminErr').textContent='Onjuist wachtwoord';
+    setTimeout(()=>{ document.getElementById('adminErr').textContent=''; },2000);
+  }
+}
+
+function uitloggen(){
+  localStorage.removeItem('marshal_id');
+  localStorage.removeItem('marshal_naam');
+  localStorage.removeItem('is_admin');
+  localStorage.removeItem('is_caddymaster');
+  huidigeMarshalId=null; huidigeMarshalNaam=''; isAdmin=false; isCaddymaster=false;
+  if(verzoekPollingInterval){ clearInterval(verzoekPollingInterval); verzoekPollingInterval=null; }
+  if(meldPollingInterval){ clearInterval(meldPollingInterval); meldPollingInterval=null; }
+  document.getElementById('appScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('wrapNaam').classList.remove('hidden');
+  document.getElementById('wrapAdmin').classList.add('hidden');
+  document.getElementById('loginTitle').textContent='Inloggen';
+  document.getElementById('adminPwdInput').value='';
+  const pi = document.getElementById('pinInput'); if(pi) pi.value='';
+  pinBuffer=''; updatePinDots();
+  const sel = document.getElementById('loginSelect');
+  if(sel) sel.selectedIndex = 0;
+  huidigeMarshalId = null; huidigeMarshalNaam = '';
+  // Herlaad marshals zodat dropdown gevuld is
+  laadMarshalsLogin();
+}
+
+
+// ─── VERZOEKEN (CADDYMASTER) ──────────────────────────────
+
+async function laadVerzoeken(){
+  try {
+    const nu = new Date();
+    const vandaag = nu.toISOString().split('T')[0];
+    // Na 22:00 geen verzoeken meer tonen
+    if(nu.getHours() >= 22){
+      renderVerzoekenLijst([]);
+      return;
+    }
+    const verzoeken = await sbG('verzoeken',
+      'select=*&aangemaakt_at=gte.'+vandaag+'T00:00:00&order=aangemaakt_at.desc'
+    );
+    renderVerzoekenLijst(verzoeken||[]);
+  } catch(e){ console.error('Verzoeken laden:', e); }
+}
+
+// Set van lokaal weggeklikte verzoek-ids (verdwijnen na herlaad app)
+const weggeklikteVerzoeken = new Set();
+
+function renderVerzoekenLijst(verzoeken){
+  const el = document.getElementById('verzoekenLijst');
+  if(!el) return;
+  // Toon alle verzoeken van vandaag, behalve lokaal weggeklikte
+  const zichtbaar = verzoeken.filter(v => !weggeklikteVerzoeken.has(v.id));
+  if(!zichtbaar.length){
+    el.innerHTML = '<div style="font-size:.8rem;color:var(--tl);font-style:italic;padding:4px">Geen actieve verzoeken</div>';
+    return;
+  }
+  const statusKleur = { verzonden:'var(--amber)', op_weg:'#2196f3', geregeld:'var(--gl)' };
+  const statusLabel = { verzonden:'Verzonden', op_weg:'Op weg', geregeld:'Geregeld ✓' };
+  el.innerHTML = zichtbaar.map(v => {
+    const kleur = statusKleur[v.status]||'var(--tl)';
+    const label = statusLabel[v.status]||v.status;
+    const tijd = v.aangemaakt_at ? datumKort(v.aangemaakt_at) : '';
+    const isGeregeld = v.status === 'geregeld';
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--cd);${isGeregeld?'opacity:.85':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px">
+        <div style="font-size:.8rem;font-weight:600;color:var(--td)">${v.marshal_naam||'Onbekend'}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="font-size:.65rem;color:${kleur};font-weight:600">${label}</span>
+          ${isGeregeld ? `<button onclick="wegklikkenVerzoek('${v.id}')" title="Verwijder uit lijst"
+            style="background:none;border:1px solid var(--cd);border-radius:50%;width:18px;height:18px;font-size:.6rem;cursor:pointer;color:var(--tl);line-height:1;padding:0;display:flex;align-items:center;justify-content:center">&times;</button>` : ''}
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--tm);margin-bottom:2px">${v.tekst}</div>
+      ${v.geregeld_notitie ? `<div style="font-size:.72rem;color:var(--gd);margin-top:2px;padding:3px 6px;background:var(--gp);border-radius:4px">✓ ${v.geregeld_notitie}</div>` : ''}
+      <div style="font-size:.68rem;color:var(--tl);margin-top:2px">${tijd}</div>
+    </div>`;
+  }).join('');
+}
+
+function wegklikkenVerzoek(id){
+  weggeklikteVerzoeken.add(id);
+  laadVerzoeken();
+}
+
+async function laadVerzoekVoorMarshal(){
+  if(!huidigeMarshalId) return;
+  try {
+    const nu = new Date();
+    if(nu.getHours() >= 22){ renderVerzoekMarshal([]); return; }
+    const vandaag = nu.toISOString().split('T')[0];
+    const verzoeken = await sbG('verzoeken',
+      'select=*&marshal_id=eq.'+huidigeMarshalId+'&aangemaakt_at=gte.'+vandaag+'T00:00:00&status=neq.geregeld&order=aangemaakt_at.desc'
+    );
+    renderVerzoekMarshal(verzoeken||[]);
+  } catch(e){ console.error('Verzoek marshal laden:', e); }
+}
+
+function renderVerzoekMarshal(verzoeken){
+  const el = document.getElementById('verzoekLijstMarshal');
+  const geenBer = document.getElementById('caddymasterTekst');
+  if(!el) return;
+  if(!verzoeken.length){
+    el.innerHTML = '';
+    if(geenBer) geenBer.style.display = '';
+    return;
+  }
+  // Verberg "Geen berichten" als er verzoeken zijn
+  if(geenBer) geenBer.style.display = 'none';
+  el.innerHTML = verzoeken.map(v => {
+    const isOpWeg = v.status === 'op_weg';
+    const opWegKnop = !isOpWeg
+      ? `<button onclick="updateVerzoekStatus('${v.id}','op_weg')" style="font-size:.82rem;padding:7px 14px;border-radius:10px;border:1px solid var(--gm);background:var(--gp);color:var(--gd);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600;white-space:nowrap">Op weg</button>`
+      : `<span style="font-size:.65rem;color:var(--gm);font-weight:600;white-space:nowrap">Op weg ✓</span>`;
+    return `<div id="verzoek-${v.id}" style="padding:8px 0;border-top:1px solid var(--cd)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;font-size:.82rem;color:var(--td)"><span style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--tl);margin-right:6px">${v.aangemaakt_at ? datumKort(v.aangemaakt_at) : ''}</span>${v.tekst}</div>
+        ${opWegKnop}
+        <button onclick="toonGeregeldInvoer('${v.id}')" style="font-size:.82rem;padding:7px 14px;border-radius:10px;border:1px solid var(--gl);background:var(--gl);color:#fff;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600;white-space:nowrap">Geregeld</button>
+      </div>
+      <div id="geregeld-invoer-${v.id}" class="hidden" style="margin-top:6px;display:flex;gap:6px;align-items:flex-start">
+        <textarea id="geregeld-tekst-${v.id}" rows="2" placeholder="Optioneel: wat heb je gedaan? (bijv. club gevonden bij green 7)"
+          style="flex:1;padding:6px 8px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;resize:none;background:var(--wh);color:var(--td)"></textarea>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button onclick="bevestigGeregeld('${v.id}')" style="font-size:.82rem;padding:7px 14px;border-radius:10px;border:none;background:var(--gl);color:#fff;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600;white-space:nowrap">Verzenden</button>
+          <button onclick="bevestigGeregeld('${v.id}', true)" style="font-size:.82rem;padding:7px 14px;border-radius:10px;border:1px solid var(--cd);background:none;color:var(--tl);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap">Overslaan</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toonGeregeldInvoer(verzoekId){
+  const invoer = document.getElementById('geregeld-invoer-'+verzoekId);
+  if(invoer){
+    invoer.classList.remove('hidden');
+    invoer.style.display = 'flex';
+    document.getElementById('geregeld-tekst-'+verzoekId)?.focus();
+  }
+}
+
+async function bevestigGeregeld(verzoekId, overslaan=false){
+  const tekst = overslaan ? null : (document.getElementById('geregeld-tekst-'+verzoekId)?.value.trim() || null);
+  await updateVerzoekStatus(verzoekId, 'geregeld', tekst);
+}
+
+async function updateVerzoekStatus(id, status, notitie=null){
+  try {
+    const update = { status };
+    if(status === 'op_weg') update.op_weg_at = new Date().toISOString();
+    if(status === 'geregeld'){
+      update.geregeld_at = new Date().toISOString();
+      if(notitie) update.geregeld_notitie = notitie;
+    }
+    await sbU('verzoeken', update, 'id=eq.'+id);
+    toast(status === 'op_weg' ? 'Status: Op weg' : 'Verzoek geregeld ✓');
+    laadVerzoekVoorMarshal();
+    if(isCaddymaster) laadVerzoeken();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function openVerzoekFormulier(){
+  document.getElementById('verzoekInvoer').classList.remove('hidden');
+  document.getElementById('verzoekTekst').value = '';
+  const now = new Date();
+  const vandaag = now.toISOString().split('T')[0];
+  const nuTijd = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const infoEl = document.getElementById('verzoekMarshalInfo');
+  try {
+    const slots = await sbGAll('dienst_slots',
+      'select=id,start_tijd,eind_tijd,dienst_boekingen(marshal_id,marshals(naam,id))&datum=eq.'+vandaag
+    );
+    const actiefSlot = (slots||[]).find(s => {
+      const st = s.start_tijd?.slice(0,5);
+      const et = s.eind_tijd?.slice(0,5);
+      return st && et && nuTijd >= st && nuTijd <= et && s.dienst_boekingen?.length;
+    });
+    if(actiefSlot && actiefSlot.dienst_boekingen?.length){
+      const marshal = actiefSlot.dienst_boekingen[0].marshals;
+      window._verzoekMarshalId = marshal.id;
+      window._verzoekMarshalNaam = marshal.naam;
+      if(infoEl) infoEl.innerHTML = '<span style="color:var(--gd);font-weight:600">Op dienst:</span> '+marshal.naam+' ('+actiefSlot.start_tijd?.slice(0,5)+'&ndash;'+actiefSlot.eind_tijd?.slice(0,5)+')';
+    } else {
+      window._verzoekMarshalId = null;
+      window._verzoekMarshalNaam = 'Geen marshal op dienst';
+      if(infoEl) infoEl.innerHTML = '<span style="color:var(--amber);">&#9888; Geen marshal gevonden voor dit tijdstip</span>';
+    }
+  } catch(e){
+    if(infoEl) infoEl.textContent = 'Kan dienstrooster niet laden';
+  }
+}
+
+function sluitVerzoekFormulier(){
+  document.getElementById('verzoekInvoer').classList.add('hidden');
+}
+
+async function stuurVerzoek(){
+  const tekst = document.getElementById('verzoekTekst').value.trim();
+  if(!tekst){ toast('Voer een tekst in', true); return; }
+  try {
+    await sbP('verzoeken', {
+      tekst,
+      marshal_id: window._verzoekMarshalId || null,
+      marshal_naam: window._verzoekMarshalNaam || 'Onbekend',
+      status: 'verzonden'
+    });
+    toast('Verzoek verstuurd ✓');
+    sluitVerzoekFormulier();
+    laadVerzoeken();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+// ─── MARSHAL PROFIEL POPUP (ADMIN + CADDYMASTER) ─────────
+
+async function openMarshalProfiel(marshalId){
+  try {
+    const marshals = await sbG('marshals', 'select=*&id=eq.'+marshalId);
+    const m = (marshals||[])[0];
+    if(!m) return;
+    const bestaand = document.getElementById('marshalProfielPopup');
+    if(bestaand) bestaand.remove();
+    const aedDatumVal = m.aed_datum ? m.aed_datum.slice(0,10) : '';
+    const verwijderKnop = isAdmin
+      ? '<button class="btn bd bf" style="margin-top:6px" onclick="event.stopPropagation();verwijderMarshal(\''+m.id+'\',\''+m.naam+'\')">Marshal verwijderen</button>'
+      : '';
+    const popup = document.createElement('div');
+    popup.className = 'slot-popup';
+    popup.id = 'marshalProfielPopup';
+    popup.onclick = (e) => { if(e.target===popup) popup.remove(); };
+    popup.innerHTML = '<div class="slot-popup-box" style="max-width:340px">'
+      +'<div class="slot-popup-titel">'+m.naam+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'
+      +'<div class="fg"><label>Naam</label>'
+      +'<input type="text" id="mpNaam" value="'+m.naam+'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+      +'<div class="fg"><label>Telefoon</label>'
+      +'<input type="text" id="mpTel" value="'+(m.telefoon||'')+'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+      +'<div class="fg"><label>E-mail</label>'
+      +'<input type="text" id="mpEmail" value="'+(m.email||'')+'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+      +'<div class="fg"><label>AED datum</label>'
+      +'<input type="date" id="mpAedDatum" value="'+aedDatumVal+'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+      +'</div>'
+      +'<button class="btn bp bf" onclick="slaaMarshalProfiel(\''+m.id+'\')">Opslaan</button>'
+      +'<button class="btn bg2 bf" style="margin-top:8px" onclick="document.getElementById(\'marshalProfielPopup\').remove()">Sluiten</button>'
+      +verwijderKnop
+      +'</div>';
+    document.body.appendChild(popup);
+  } catch(e){ toast('Profiel laden mislukt: '+e.message, true); }
+}
+
+async function slaaMarshalProfiel(marshalId){
+  const naam = document.getElementById('mpNaam').value.trim();
+  const tel = document.getElementById('mpTel').value.trim();
+  const email = document.getElementById('mpEmail').value.trim();
+  const aedDatum = document.getElementById('mpAedDatum').value || null;
+  // Gecertificeerd = datum aanwezig én nog niet verlopen
+  const aed = aedDatum ? (()=>{ const v=new Date(aedDatum); v.setFullYear(v.getFullYear()+1); return v>new Date(); })() : false;
+  if(!naam){ toast('Naam is verplicht', true); return; }
+  try {
+    await sbU('marshals', { naam, telefoon:tel, email, aed_gecertificeerd:aed, aed_datum:aedDatum }, 'id=eq.'+marshalId);
+    toast('Profiel opgeslagen ✓');
+    document.getElementById('marshalProfielPopup')?.remove();
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+
+// ─── APP START ────────────────────────────────────────────
+function startApp(admin, caddy=false){
+  isAdmin=admin;
+  isCaddymaster=caddy;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appScreen').classList.remove('hidden');
+  document.getElementById('hdrNaam').textContent=huidigeMarshalNaam;
+  // Nav zichtbaarheid
+  document.getElementById('ntAdmin').classList.toggle('hidden', !(admin||caddy));
+  document.getElementById('ntTracker').classList.remove('hidden');
+  document.getElementById('ntProfiel').classList.toggle('hidden', caddy || admin);
+  // Dashboard vs marshal view
+  document.getElementById('trackerDashboard').classList.toggle('hidden', !(admin||caddy));
+  document.getElementById('trackerMarshal').classList.toggle('hidden', admin||caddy);
+  // Noodknoppen verbergen voor caddymaster en voorzitter
+  const noodRow = document.getElementById('noodRow');
+  if(noodRow) noodRow.classList.toggle('hidden', caddy || admin);
+  // Verzoeken vs caddymasterBar
+  const verzBar = document.getElementById('verzoekenBar');
+  if(verzBar) verzBar.classList.toggle('hidden', !caddy);
+  const caddyBar = document.getElementById('caddymasterBar');
+  if(caddyBar) caddyBar.classList.toggle('hidden', caddy);
+  // Pace of play verbergen voor caddymaster
+  setTimeout(() => {
+    const paceCard = document.getElementById('paceCard');
+    if(paceCard) paceCard.classList.toggle('hidden', caddy);
+    // Algoritme kaart verbergen voor caddymaster
+    const algCard = document.getElementById('algCard');
+    if(algCard) algCard.classList.toggle('hidden', caddy);
+    // Seizoen aanmaken alleen voor voorzitter
+    const seizoenBtn = document.getElementById('seizoenBtnWrap');
+    if(seizoenBtn) seizoenBtn.classList.toggle('hidden', caddy || !admin);
+    // Marshal toevoegen knop verbergen voor caddymaster
+    const mToevBtn = document.getElementById('marshalToevoegenBtn');
+    if(mToevBtn) mToevBtn.classList.toggle('hidden', caddy);
+    // Admin panel subtitle
+    const adminSub = document.querySelector('#panelAdmin .ss');
+    if(adminSub) adminSub.textContent = caddy ? 'Caddymaster' : 'Voorzitter';
+  }, 100);
+  // Diensten: caddymaster én voorzitter zien altijd 'alle'
+  if(caddy || admin){
+    dienstView = 'alle';
+    const toggleWrap = document.querySelector('.dienst-toggle');
+    if(toggleWrap) toggleWrap.classList.add('hidden');
+  }
+  laadHome();
+  if(admin || caddy) laadAdmin();
+  laadTracker();
+  if(caddy) laadVerzoeken();
+  // Polling: marshal ontvangt verzoeken automatisch elke 20 seconden
+  if(verzoekPollingInterval) clearInterval(verzoekPollingInterval);
+  if(!admin && !caddy && huidigeMarshalId){
+    verzoekPollingInterval = setInterval(laadVerzoekVoorMarshal, 20000);
+  }
+  // Polling: caddymaster ziet statuswijzigingen en meldingen automatisch elke 20 seconden
+  if(caddy){
+    verzoekPollingInterval = setInterval(laadVerzoeken, 20000);
+    if(meldPollingInterval) clearInterval(meldPollingInterval);
+    meldPollingInterval = setInterval(laadAdmin, 30000);
+  }
+}
+
+function tijdStr(d){ return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+
+// ─── NAVIGATIE ────────────────────────────────────────────
+function showPanel(naam){
+  ['Home','Diensten','Profiel','Admin','Tracker'].forEach(p=>{
+    const el=document.getElementById('panel'+p);
+    if(el){ el.classList.toggle('active',p===naam); el.classList.toggle('hidden',p!==naam); }
+    const nt=document.getElementById('nt'+p);
+    if(nt) nt.classList.toggle('active',p===naam);
+  });
+  if(naam==='Diensten') laadDiensten();
+  if(naam==='Profiel') laadProfiel();
+  if(naam==='Admin') laadAdmin();
+  if(naam==='Tracker') laadTracker();
+}
+
+// ─── HOME ─────────────────────────────────────────────────
+async function laadHome(){
+  try {
+    const vandaag=new Date().toISOString().split('T')[0];
+    const meldingen = await sbG('meldingen',
+      'select=id,type,hole,actie,notities,created_at,marshal_id,marshals(naam)&order=created_at.desc&created_at=gte.'+vandaag+'T00:00:00&limit=20'
+    );
+    const vandaagMeld=(meldingen||[]).filter(m=>m.created_at&&m.created_at.startsWith(vandaag));
+    const el=document.getElementById('recentMeld');
+    if(!el) return;
+    if(!vandaagMeld.length){
+      el.innerHTML='<div class="caddy-t" style="color:var(--tl);font-style:italic">Geen meldingen vandaag</div>';
+    } else {
+      const kleuren={slow_play:'#d85a30',bunker:'#854f0b',pitchmark:'#2d7a4f',kleding:'#1565c0',buggy:'#6a1b9a',betaling:'#c0392b',baan:'#795548',logboek:'#2d7a4f',anders:'#555'};
+      el.innerHTML=vandaagMeld.map(m=>`
+        <div class="log-item">
+          <div class="log-dot" style="background:${kleuren[m.type]||'#888'}"></div>
+          <div><div class="log-m" style="color:var(--td)">${datumKort(m.created_at)} · ${m.marshals?m.marshals.naam:''} · ${typeLabel(m.type)}${m.hole?' — hole '+m.hole:''}${m.notities?' — '+m.notities:''}</div>
+          </div>
+        </div>`).join('');
+    }
+  } catch(e){ toast('Home laden mislukt: '+e.message,true); }
+  // Verzoeken laden voor marshal
+  if(huidigeMarshalId && !isAdmin && !isCaddymaster) laadVerzoekVoorMarshal();
+}
+
+// ─── DIENST START/STOP ─────────────────────────────────────
+let dienstTimerInterval=null;
+
+function resetDienstBtn(){
+  const btn=document.getElementById('dienstBtn');
+  if(!btn) return;
+  btn.className='dienst-start-btn start';
+  const ic=document.getElementById('dienstBtnIc'); if(ic) ic.textContent='▶';
+  const tx=document.getElementById('dienstBtnTxt'); if(tx) tx.textContent='Dienst starten';
+  const ti=document.getElementById('dienstTimer'); if(ti) ti.classList.add('hidden');
+  if(dienstTimerInterval){ clearInterval(dienstTimerInterval); dienstTimerInterval=null; }
+}
+
+function toggleDienst(){
+  const btn=document.getElementById('dienstBtn');
+  if(sessionStartTime){
+    // Dienst stoppen
+    if(!confirm('Dienst beëindigen?')) return;
+    sessionStartTime=null;
+    if(dienstTimerInterval){ clearInterval(dienstTimerInterval); dienstTimerInterval=null; }
+    resetDienstBtn();
+    toast('Dienst beëindigd');
+  } else {
+    // Dienst starten
+    sessionStartTime=new Date();
+    btn.className='dienst-start-btn stop';
+    document.getElementById('dienstBtnIc').textContent='■';
+    document.getElementById('dienstBtnTxt').textContent='Dienst beëindigen';
+    const timerEl=document.getElementById('dienstTimer');
+    timerEl.classList.remove('hidden');
+    const updateTimer=()=>{
+      const min=Math.floor((new Date()-sessionStartTime)/60000);
+      const uur=Math.floor(min/60);
+      const rest=min%60;
+      timerEl.textContent='Actief sinds '+tijdStr(sessionStartTime)+(min>0?' · '+(uur>0?uur+'u ':'')+rest+'m':'');
+    };
+    updateTimer();
+    dienstTimerInterval=setInterval(updateTimer,60000);
+    toast('Dienst gestart ✓');
+  }
+}
+
+// ─── DIENSTEN ─────────────────────────────────────────────
+let dienstView = 'mijn';
+let toonEerder = false;
+let alleBoekingen = new Set();
+let alleSlots = [];
+
+function setDienstView(v){
+  dienstView=v;
+  document.getElementById('dtogMijn').classList.toggle('active', v==='mijn');
+  document.getElementById('dtogAlle').classList.toggle('active', v==='alle');
+  renderDiensten();
+}
+
+function toggleEerder(){
+  toonEerder=!toonEerder;
+  const btn=document.querySelector('.toon-eerder-btn');
+  if(btn) btn.textContent = toonEerder ? '↓ Verberg eerdere diensten' : '↑ Toon eerdere diensten';
+  renderDiensten();
+}
+
+async function laadDiensten(){
+  document.getElementById('dienstenLijst').innerHTML='<div class="loading">Laden...</div>';
+  try {
+    let slots, mijnBoekingen;
+    try {
+      [slots, mijnBoekingen] = await Promise.all([
+        sbGAll('dienst_slots', 'select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc'),
+        huidigeMarshalId ? sbG('dienst_boekingen', 'select=slot_id&marshal_id=eq.'+huidigeMarshalId) : Promise.resolve([])
+      ]);
+    } catch(e1) {
+      // Fallback: geblokkeerd kolom bestaat mogelijk nog niet
+      [slots, mijnBoekingen] = await Promise.all([
+        sbGAll('dienst_slots', 'select=id,datum,start_tijd,eind_tijd,wedstrijddag,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc'),
+        huidigeMarshalId ? sbG('dienst_boekingen', 'select=slot_id&marshal_id=eq.'+huidigeMarshalId) : Promise.resolve([])
+      ]);
+    }
+    alleSlots = (slots||[]); // alle slots, incl. wedstrijddag en geblokkeerd
+    alleBoekingen = new Set((mijnBoekingen||[]).map(b=>b.slot_id));
+    document.getElementById('toonEerderWrap').classList.remove('hidden');
+    weekGridMaandag = null; // reset zodat grid begint bij huidige week
+    renderDiensten();
+  } catch(e){ toast('Diensten laden mislukt: '+e.message,true); }
+}
+
+function renderDiensten(){
+  const vandaag = new Date().toISOString().split('T')[0];
+  let slots = alleSlots;
+  if(dienstView === 'mijn') slots = slots.filter(s => alleBoekingen.has(s.id));
+
+  // Check orientation — landscape grid alleen op smartphones (< 768px)
+  const isLandscape = window.matchMedia('(orientation:landscape) and (max-width:767px)').matches;
+  const isBreed = window.innerWidth >= 900;
+  if(isLandscape || isBreed){
+    renderWeekGrid(alleSlots, vandaag);
+    return;
+  }
+
+  // Portrait list
+  const el = document.getElementById('dienstenLijst');
+
+  if(dienstView === 'mijn'){
+    // Mijn diensten: toon alleen geboekte slots
+    const verleden = slots.filter(s => s.datum < vandaag);
+    const toekomst = slots.filter(s => s.datum >= vandaag);
+    const getoond = toonEerder ? [...verleden, ...toekomst] : toekomst;
+
+    if(!getoond.length){
+      el.innerHTML = '<div class="empty">Geen geboekte diensten</div>';
+      return;
+    }
+
+    let html = '';
+    getoond.forEach(s => {
+      const eigenBoeking = alleBoekingen.has(s.id);
+      const isVerleden = s.datum < vandaag;
+      const dt = new Date(s.datum + 'T12:00:00');
+      const week = weekLabel(dt);
+      if(!html.includes(week)){
+        html += `<div class="slot-week">${week}</div>`;
+      }
+      const dag = dt.getDate();
+      const dagNm = DAGEN[dt.getDay()];
+      const tijd = s.start_tijd.slice(0,5)+'–'+s.eind_tijd.slice(0,5);
+      let rowClass = 'slot-row eigen' + (isVerleden?' verleden':'');
+      html += `<div class="${rowClass}">
+        <div class="slot-datum">${dag}<div class="slot-dag">${dagNm}</div></div>
+        <div class="slot-tijd">${tijd}</div>
+        ${eigenBoeking
+          ? `<button class="shift-book geboekt" onclick="toggleBoeking('${s.id}',true,this)">Geboekt ✓</button>`
+          : (!isVerleden ? `<button class="shift-book" onclick="toggleBoeking('${s.id}',false,this)">Boek</button>` : '')
+        }
+      </div>`;
+    });
+    el.innerHTML = html;
+    return;
+  }
+
+  // Alle diensten: genereer alle tijdvakken per dag (zoals landscape grid)
+  const TIJDEN = ['10:00','12:00','14:00','16:00','18:00','20:00'];
+  const EIND_MAP = {'10:00':'12:00','12:00':'14:00','14:00':'16:00','16:00':'18:00','18:00':'20:00','20:00':'21:30'};
+
+  // Verzamel alle unieke datums uit alleSlots + de komende 14 dagen
+  const dagenSet = new Set();
+  alleSlots.forEach(s => { if(s.datum >= vandaag) dagenSet.add(s.datum); });
+  // Voeg komende 14 dagen toe zodat ook lege dagen zichtbaar zijn
+  for(let i=0;i<14;i++){
+    const d = new Date(vandaag+'T12:00:00'); d.setDate(d.getDate()+i);
+    dagenSet.add(d.toISOString().split('T')[0]);
+  }
+  // Voeg ook verleden dagen toe als toonEerder aan is
+  if(toonEerder){
+    alleSlots.forEach(s => { if(s.datum < vandaag) dagenSet.add(s.datum); });
+  }
+
+  const dagenGesorteerd = Array.from(dagenSet).sort();
+  const dagTokomst = dagenGesorteerd.filter(d => d >= vandaag);
+  const dagVerleden = dagenGesorteerd.filter(d => d < vandaag);
+  const dagenTonen = toonEerder ? [...dagVerleden, ...dagTokomst] : dagTokomst;
+
+  if(!dagenTonen.length){
+    el.innerHTML = '<div class="empty">Geen diensten gevonden</div>';
+    return;
+  }
+
+  let html = '';
+  dagenTonen.forEach(datum => {
+    const dt = new Date(datum + 'T12:00:00');
+    const dagStr = dt.getDate() + ' ' + MAANDEN[dt.getMonth()];
+    const dagNm = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'][dt.getDay()];
+    const isVerleden = datum < vandaag;
+
+    // Controleer of er iets te tonen is voor deze dag
+    const heeftSlots = TIJDEN.some(tijd => {
+      const slot = alleSlots.find(s => s.datum===datum && s.start_tijd.slice(0,5)===tijd);
+      return slot || !isVerleden;
+    });
+    if(!heeftSlots) return;
+
+    html += `<div class="dag-hdr"><div class="dag-hdr-datum">${dagStr}</div><div class="dag-hdr-dag">${dagNm}</div></div>`;
+
+    TIJDEN.forEach(tijd => {
+      const eind = EIND_MAP[tijd];
+      const slot = alleSlots.find(s => s.datum===datum && s.start_tijd.slice(0,5)===tijd);
+      const geblokkeerd = slot && (slot.wedstrijddag || slot.geblokkeerd);
+      const tijdStr2 = tijd+'–'+eind;
+
+      if(isVerleden){
+        if(!slot) return; // sla lege verleden tijdvakken over
+        const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+        const bezetter = bezet ? slot.dienst_boekingen[0].marshals?.naam : null;
+        html += `<div class="slot-row verleden">
+          <div class="slot-tijd">${tijdStr2}</div>
+          <div class="slot-naam">${bezetter || 'Niet ingevuld'}</div>
+        </div>`;
+        return;
+      }
+
+      if(geblokkeerd){
+        if(isAdmin || isCaddymaster){
+          // Klikbaar voor beheer
+          const wedstrNaam = slot?.geblokkeerd_reden || '';
+          const isWed = slot?.wedstrijddag;
+          html += `<div class="slot-row" style="opacity:.7;cursor:pointer" onclick="openSlotDetail('${slot.id}','${datum}','${tijdStr2}','',false,false)">
+            <div class="slot-tijd">${tijdStr2}</div>
+            <div class="slot-naam" style="font-weight:${isWed?'600':'400'};color:${isWed?'var(--red)':'var(--amber)'}">${isWed?(wedstrNaam||'Wedstrijd'):'Niet nodig'}</div>
+          </div>`;
+        } else {
+          html += `<div class="slot-row" style="opacity:.5">
+            <div class="slot-tijd">${tijdStr2}</div>
+            <div class="slot-naam" style="font-weight:600;color:var(--red)">${slot?.wedstrijddag?(slot?.geblokkeerd_reden||'Wedstrijd'):'Niet nodig'}</div>
+          </div>`;
+        }
+        return;
+      }
+
+      if(slot){
+        const eigenBoeking = alleBoekingen.has(slot.id);
+        const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+        const bezetter = bezet ? slot.dienst_boekingen[0].marshals?.naam : null;
+        let rowClass = 'slot-row' + (eigenBoeking?' eigen':(bezet?' bezet':''));
+
+        if(isAdmin || isCaddymaster){
+          const naamTekst = bezet ? (bezetter||'Bezet') : 'Beschikbaar';
+          html += `<div class="${rowClass}" style="cursor:pointer"
+              data-slotid="${slot.id}" data-datum="${datum}" data-tijd="${tijdStr2}" data-bezetter="${bezetter||''}"
+              onclick="beheerSlotKlik(this)">
+            <div class="slot-tijd">${tijdStr2}</div>
+            <div class="slot-naam" style="font-weight:${bezet?'600':'400'};font-style:${bezet?'normal':'normal'}">${naamTekst}</div>
+          </div>`;
+        } else {
+          html += `<div class="${rowClass}" onclick="openSlotDetail('${slot.id}','${datum}','${tijdStr2}',${JSON.stringify(bezetter||'')},${eigenBoeking},false)">
+            <div class="slot-tijd">${tijdStr2}</div>
+            ${bezet
+              ? `<div class="slot-naam" style="font-weight:600">${eigenBoeking ? 'Jij' : (bezetter||'Bezet')}</div>`
+              : `<div class="slot-naam" style="color:#aaa">Beschikbaar</div>`
+            }
+            ${eigenBoeking
+              ? `<button class="shift-book geboekt" onclick="event.stopPropagation();toggleBoeking('${slot.id}',true,this)">Geboekt ✓</button>`
+              : (!bezet ? `<button class="shift-book" style="background:var(--amberl);border-color:var(--amber);color:var(--amber)" onclick="event.stopPropagation();toggleBoeking('${slot.id}',false,this)">Boek</button>` : '')
+            }
+          </div>`;
+        }
+      } else {
+        // Slot bestaat niet in DB — overgeslagen (SQL heeft alle slots aangemaakt)
+      }
+    });
+  });
+
+  el.innerHTML = html || '<div class="empty">Geen diensten gevonden</div>';
+}
+
+function achternaam(naam){
+  if(!naam) return '';
+  const delen = naam.split(' ');
+  return delen[delen.length-1];
+}
+
+function renderWeekGrid(slots, vandaag){
+  const grid = document.getElementById('weekGrid');
+  if(!grid) return;
+
+  // Desktop: toon alle weken van het seizoen scrollbaar
+  if(window.innerWidth >= 900){
+    renderSeizoenGrid(slots, vandaag);
+    return;
+  }
+
+  // Gebruik weekGridMaandag als die al gezet is, anders bereken vanaf vandaag
+  let ma;
+  if(weekGridMaandag){
+    ma = new Date(weekGridMaandag);
+  } else {
+    const nu = new Date(vandaag + 'T12:00:00');
+    ma = new Date(nu);
+    ma.setDate(nu.getDate() - ((nu.getDay()+6)%7));
+  }
+
+  const tijden = ['10:00','12:00','14:00','16:00','18:00','20:00'];
+  const eindMap = {'10:00':'12:00','12:00':'14:00','14:00':'16:00','16:00':'18:00','18:00':'20:00','20:00':'21:30'};
+  const dagKort = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+
+  const weekDagen = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(ma); d.setDate(ma.getDate()+i);
+    weekDagen.push(d);
+  }
+
+  let html = '<table class="wg-table"><thead><tr><th class="wg-th" style="min-width:52px">Tijd</th>';
+  weekDagen.forEach(d => {
+    const ds = d.toISOString().split('T')[0];
+    const isVandaag = ds === vandaag;
+    const dagIdx = d.getDay() === 0 ? 6 : d.getDay()-1;
+    html += `<th class="wg-th${isVandaag?' vandaag':''}">${dagKort[dagIdx]}<br>${d.getDate()} ${MAANDEN[d.getMonth()].slice(0,3)}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  tijden.forEach(tijd => {
+    html += `<tr><td class="wg-tijd">${tijd}</td>`;
+    weekDagen.forEach(d => {
+      const ds = d.toISOString().split('T')[0];
+      const eind = eindMap[tijd];
+      const isVerleden = ds < vandaag;
+
+      // Zoek slot in DB voor dit tijdvak
+      const slot = alleSlots.find(s => s.datum===ds && s.start_tijd.slice(0,5)===tijd);
+      const geblokkeerd = slot && (slot.wedstrijddag || slot.geblokkeerd);
+
+      // ── VERLEDEN ──
+      if(isVerleden){
+        if(!slot) { html += '<td class="wg-cel"><div class="wg-cel-inner verleden"></div></td>'; return; }
+        const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+        const naamKort = bezet ? achternaam(slot.dienst_boekingen[0].marshals?.naam||'') : '';
+        html += `<td class="wg-cel"><div class="wg-cel-inner verleden">${naamKort}</div></td>`;
+        return;
+      }
+
+      // ── GEBLOKKEERD ──
+      if(geblokkeerd){
+        if(isAdmin || isCaddymaster){
+          const wedstrNaam = slot?.geblokkeerd_reden||'';
+          const isWed = slot?.wedstrijddag;
+          const celKlasseBlok = isWed ? 'wg-wedstrijd' : 'wg-geblokkeerd';
+          const label = isWed ? (wedstrNaam||'Wedstrijd') : 'Niet nodig';
+          html += `<td class="wg-cel"><div class="wg-cel-inner ${celKlasseBlok}"
+            data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}–${eind}" data-bezetter=""
+            onclick="beheerSlotKlik(this)">${label}</div></td>`;
+        } else {
+          const isWed = slot?.wedstrijddag;
+          if(isWed){
+            html += `<td class="wg-cel"><div class="wg-cel-inner wg-wedstrijd">${slot?.geblokkeerd_reden||'Wedstrijd'}</div></td>`;
+          } else {
+            html += '<td class="wg-cel"><div class="wg-cel-inner wg-geblokkeerd"></div></td>';
+          }
+        }
+        return;
+      }
+
+      // ── BEZET / EIGEN ──
+      if(slot){
+        const eigenBoeking = alleBoekingen.has(slot.id);
+        const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+        const bezetter = bezet ? slot.dienst_boekingen[0].marshals?.naam : null;
+        const naamKort = bezetter ? achternaam(bezetter) : '';
+        if(isAdmin || isCaddymaster){
+          const celKlasse = bezet ? 'wg-bezet' : 'wg-beschikbaar';
+          const labelTxt = bezet ? naamKort : 'Beschikbaar';
+          html += `<td class="wg-cel"><div class="wg-cel-inner ${celKlasse}"
+            data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}–${eind}" data-bezetter="${bezetter||''}"
+            onclick="beheerSlotKlik(this)">${labelTxt}</div></td>`;
+          return;
+        }
+        if(eigenBoeking){
+          html += `<td class="wg-cel"><div class="wg-cel-inner eigen" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}–${eind}',${JSON.stringify(bezetter||'')},true,false)">Jij ✓</div></td>`;
+          return;
+        }
+        if(bezet){
+          html += `<td class="wg-cel"><div class="wg-cel-inner bezet" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}–${eind}',${JSON.stringify(bezetter||'')},false,false)">${naamKort}</div></td>`;
+          return;
+        }
+        html += `<td class="wg-cel"><div class="wg-cel-inner wg-boekbaar" data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}–${eind}" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}–${eind}','',false,false)">Boek</div></td>`;
+        return;
+      }
+
+      // Slot bestaat niet in DB — overgeslagen
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  // Op desktop: geen navigator, op mobiel landscape: wel
+  if(window.innerWidth < 900){
+    html += `<div style="display:flex;justify-content:space-between;margin-top:8px">
+      <button class="toon-eerder-btn" style="width:48%" onclick="verschuifWeek(-1)">&#8592; Vorige week</button>
+      <button class="toon-eerder-btn" style="width:48%" onclick="verschuifWeek(1)">Volgende week &#8594;</button>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+  weekGridMaandag = new Date(ma);
+}
+
+let weekGridMaandag = null;
+
+function verschuifWeek(richting){
+  if(!weekGridMaandag) return;
+  weekGridMaandag.setDate(weekGridMaandag.getDate() + (richting*7));
+  const vandaag = new Date().toISOString().split('T')[0];
+  renderWeekGrid(alleSlots, vandaag);
+}
+
+
+function beheerSlotKlik(el){
+  const slotId = el.dataset.slotid;
+  const datum = el.dataset.datum;
+  const tijd = el.dataset.tijd;
+  const bezetter = el.dataset.bezetter || '';
+  openSlotDetail(slotId, datum, tijd, bezetter, false, false);
+}
+
+function openSlotDetail(slotId, datum, tijd, bezetter, eigenBoeking, isVerleden){
+  const existing = document.getElementById('slotPopup');
+  if(existing) existing.remove();
+
+  const dt = new Date(datum + 'T12:00:00');
+  const datumStr = dt.getDate() + ' ' + MAANDEN[dt.getMonth()] + ' ' + dt.getFullYear();
+  const dagStr = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'][dt.getDay()];
+  const slotData = alleSlots.find(s => s.id === slotId);
+  const isGeblokkeerd = slotData?.geblokkeerd;
+  const isWedstrijd = slotData?.wedstrijddag;
+  const wedstrijdNaam = slotData?.geblokkeerd_reden || '';
+
+  const popup = document.createElement('div');
+  popup.className = 'slot-popup';
+  popup.id = 'slotPopup';
+  popup.onclick = (e) => { if(e.target===popup) popup.remove(); };
+
+  let statusHtml = '';
+  if(isWedstrijd){
+    statusHtml = '<div style="font-size:.88rem;color:var(--red);font-weight:600;margin-bottom:10px">' + (wedstrijdNaam||'Wedstrijd') + '</div>';
+  } else if(isGeblokkeerd){
+    statusHtml = '<div style="font-size:.88rem;color:var(--amber);margin-bottom:10px">Geblokkeerd — niet nodig</div>';
+  } else if(bezetter){
+    statusHtml = '<div style="font-size:.88rem;color:var(--tm);margin-bottom:10px">Ingepland: <strong>' + bezetter + '</strong></div>';
+  } else {
+    statusHtml = '<div style="font-size:.88rem;color:var(--gl);margin-bottom:10px">' + (isVerleden ? 'Niet ingevuld' : 'Beschikbaar') + '</div>';
+  }
+
+  let marshalActie = '';
+  if(!isAdmin && !isCaddymaster && !isVerleden && !isWedstrijd && !isGeblokkeerd){
+    if(eigenBoeking){
+      marshalActie = '<button class="btn bd bf" onclick="toggleBoekingViaPopup(\'' + slotId + '\',true)">Annuleren</button>';
+    } else if(!bezetter){
+      marshalActie = '<button class="btn bp bf" onclick="toggleBoekingViaPopup(\'' + slotId + '\',false)">Boek deze dienst</button>';
+    }
+  }
+
+  let beheerHtml = '';
+  if((isAdmin || isCaddymaster) && !isVerleden){
+    const acties = [];
+    if(isWedstrijd || isGeblokkeerd){
+      acties.push('<button class="btn bp bsm" style="flex:1" onclick="vrijgevenSlotPopup(\'' + slotId + '\')">Vrijgeven</button>');
+    } else {
+      if(bezetter){
+        acties.push('<button class="btn bd bsm" style="flex:1" onclick="verwijderUitDienst(\'' + slotId + '\')">Verwijder marshal</button>');
+      } else {
+        acties.push('<button class="btn bp bsm" style="flex:1" onclick="voegMarshalAanDienst(\'' + slotId + '\',\'' + datum + '\',\'' + tijd + '\')">+ Marshal</button>');
+      }
+      acties.push('<button class="btn bsm" style="flex:1;background:var(--amberl);color:var(--amber);border:1px solid #d4a057" onclick="blokkeerSlotPopup(\'' + slotId + '\')">Blokkeer</button>');
+      acties.push('<button class="btn bsm" style="flex:1;background:#fff3f3;color:var(--red);border:1px solid var(--red)" onclick="wedstrijdSlotPopup(\'' + slotId + '\')">Wedstrijd</button>');
+    }
+    if(acties.length) beheerHtml = '<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">' + acties.join('') + '</div>';
+  }
+
+  popup.innerHTML = '<div class="slot-popup-box">'
+    + '<div class="slot-popup-titel">' + datumStr + '</div>'
+    + '<div class="slot-popup-sub">' + dagStr + ' · ' + tijd + '</div>'
+    + statusHtml + marshalActie + beheerHtml
+    + '<button class="btn bg2 bf" style="margin-top:8px" onclick="document.getElementById(\'slotPopup\').remove()">Sluiten</button>'
+    + '</div>';
+  document.body.appendChild(popup);
+}
+
+
+async function toggleBoekingViaPopup(slotId, geboekt){
+  const popup = document.getElementById('slotPopup');
+  if(popup) popup.remove();
+  try {
+    if(geboekt){
+      await sbD('dienst_boekingen','marshal_id=eq.'+huidigeMarshalId+'&slot_id=eq.'+slotId);
+      alleBoekingen.delete(slotId);
+      toast('Dienst geannuleerd');
+    } else {
+      await sbP('dienst_boekingen',{marshal_id:huidigeMarshalId,slot_id:slotId});
+      alleBoekingen.add(slotId);
+      toast('Dienst geboekt! ✓');
+    }
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = (slots||[]); // alle slots, incl. wedstrijddag en geblokkeerd
+    renderDiensten();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+function weekLabel(dt){
+  const ma = new Date(dt);
+  ma.setDate(dt.getDate() - ((dt.getDay()+6)%7));
+  const zo = new Date(ma); zo.setDate(ma.getDate()+6);
+  return ma.getDate()+' '+MAANDEN[ma.getMonth()]+' – '+zo.getDate()+' '+MAANDEN[zo.getMonth()];
+}
+
+async function toggleBoeking(slotId, geboekt, btn){
+  if(!huidigeMarshalId){ toast('Niet beschikbaar voor voorzitter',true); return; }
+  btn.disabled=true; btn.textContent='...';
+  try {
+    if(geboekt){
+      await sbD('dienst_boekingen','marshal_id=eq.'+huidigeMarshalId+'&slot_id=eq.'+slotId);
+      alleBoekingen.delete(slotId);
+      toast('Dienst geannuleerd');
+    } else {
+      await sbP('dienst_boekingen',{marshal_id:huidigeMarshalId,slot_id:slotId});
+      alleBoekingen.add(slotId);
+      toast('Dienst geboekt! ✓');
+    }
+    // Herlaad slots om bezetter-naam bij te werken in alle-view
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = (slots||[]); // alle slots, incl. wedstrijddag en geblokkeerd
+    renderDiensten();
+  } catch(e){
+    toast('Fout: '+e.message,true);
+    btn.disabled=false;
+    btn.textContent=geboekt?'Geboekt ✓':'Boek';
+  }
+}
+
+// ─── MELDING ──────────────────────────────────────────────
+let meldModus = 'logboek';
+let selectedLogHole = null;
+let selectedIncHole = null;
+
+function setMeldModus(modus, btn){
+  meldModus = modus;
+  document.querySelectorAll('.dtog-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mPanelLogboek').classList.toggle('hidden', modus!=='logboek');
+  document.getElementById('mPanelIncident').classList.toggle('hidden', modus!=='incident');
+}
+
+function selLogHole(nr, btn){
+  selectedLogHole = selectedLogHole === nr ? null : nr;
+  document.querySelectorAll('#lHoleGrid .hgbtn').forEach(b=>b.classList.remove('sel'));
+  if(selectedLogHole) btn.classList.add('sel');
+}
+
+function selIncHole(nr, btn){
+  selectedIncHole = selectedIncHole === nr ? null : nr;
+  document.querySelectorAll('#iHoleGrid .hgbtn').forEach(b=>b.classList.remove('sel'));
+  if(selectedIncHole) btn.classList.add('sel');
+}
+
+function toggleMeldInvoer(modus){
+  const logboek = document.getElementById('homeLogboekInvoer');
+  const incident = document.getElementById('homeIncidentInvoer');
+  if(modus==='logboek'){
+    const isOpen = !logboek.classList.contains('hidden');
+    logboek.classList.toggle('hidden', isOpen);
+    incident.classList.add('hidden');
+    if(!isOpen) document.getElementById('lNotitie').focus();
+  } else {
+    const isOpen = !incident.classList.contains('hidden');
+    incident.classList.toggle('hidden', isOpen);
+    logboek.classList.add('hidden');
+  }
+}
+
+function sluitMeldInvoer(){
+  document.getElementById('homeLogboekInvoer').classList.add('hidden');
+  document.getElementById('homeIncidentInvoer').classList.add('hidden');
+}
+
+function toonPinVergeten(){
+  const popup = document.createElement('div');
+  popup.className = 'slot-popup';
+  popup.onclick = (e)=>{ if(e.target===popup) popup.remove(); };
+  popup.innerHTML = `<div class="slot-popup-box">
+    <div class="slot-popup-titel">Pincode vergeten?</div>
+    <div class="slot-popup-sub" style="margin-top:8px;line-height:1.6">Neem contact op met de commissievoorzitter om uw pincode te resetten. De voorzitter kan dit doen via het beheerscherm.</div>
+    <button class="btn bg2 bf" style="margin-top:16px" onclick="this.closest('.slot-popup').remove()">Sluiten</button>
+  </div>`;
+  document.body.appendChild(popup);
+}
+
+function verwerkPinInput(val){
+  // Valideer: alleen cijfers, max 4
+  const clean = val.replace(/\D/g,'').slice(0,4);
+  const input = document.getElementById('pinInput');
+  if(input.value !== clean) input.value = clean;
+  document.getElementById('pinErr').textContent = '';
+  if(clean.length === 4) controleerPin();
+}
+
+function pinVanInput(val){
+  // Sync native input to pinBuffer
+  pinBuffer = val.replace(/\D/g,'').slice(0,4);
+  const inp = document.getElementById('pinNativeInput');
+  if(inp && inp.value !== pinBuffer) inp.value = pinBuffer;
+  if(pinBuffer.length === 4) setTimeout(controleerPin, 100);
+}
+
+function bouwNumpad(){
+  // Numpad vervangen door native input — geen actie nodig
+}
+
+function updatePinDots(){
+  // Pin dots vervangen door native input — geen actie nodig
+  // Reset het input veld als pinBuffer leeg is
+  if(pinBuffer === ''){
+    const inp = document.getElementById('pinNativeInput');
+    if(inp) inp.value = '';
+  }
+}
+
+function bouwHoleGrids(){
+  ['lHoleGrid','iHoleGrid'].forEach(gridId=>{
+    const grid = document.getElementById(gridId);
+    if(!grid || grid.children.length) return;
+    const isLog = gridId === 'lHoleGrid';
+    for(let i=1;i<=18;i++){
+      const btn = document.createElement('button');
+      btn.className = 'hgbtn' + (i===10?' cross':'');
+      btn.textContent = i;
+      const nr = i;
+      btn.onclick = isLog ? ()=>selLogHole(nr,btn) : ()=>selIncHole(nr,btn);
+      grid.appendChild(btn);
+    }
+  });
+}
+
+function resetMelding(){
+  bouwHoleGrids();
+  selectedLogHole = null;
+  selectedIncHole = null;
+  sluitMeldInvoer();
+  const lN = document.getElementById('lNotitie'); if(lN) lN.value='';
+  const iN = document.getElementById('iNotitie'); if(iN) iN.value='';
+  const iS = document.getElementById('iSpeler'); if(iS) iS.value='';
+  const iA = document.getElementById('iActie'); if(iA) iA.selectedIndex=0;
+  document.querySelectorAll('.inc-btn').forEach(b=>b.classList.remove('sel'));
+  const slb = document.querySelector('[data-type="slow_play"]'); if(slb) slb.classList.add('sel');
+  selectedIncType='slow_play';
+  voiceActive=false;
+  ['L','I'].forEach(sfx=>{
+    const vb=document.getElementById('voiceBtn'+sfx);
+    if(vb){ vb.className='voice-btn'; document.getElementById('voiceTxt'+sfx).textContent='Spraaknotitie'; }
+    const vt=document.getElementById('voiceTranscript'+sfx);
+    if(vt){ vt.classList.add('hidden'); vt.textContent=''; }
+  });
+}
+
+function selInc(btn){
+  document.querySelectorAll('.inc-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedIncType=btn.dataset.type;
+}
+
+function toggleVoice(sfx){
+  const id = sfx||'';
+  const targetField = sfx==='L' ? 'lNotitie' : 'iNotitie';
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    toast('Spraakherkenning niet beschikbaar op dit apparaat',true); return;
+  }
+  if(voiceActive){
+    if(voiceRec) voiceRec.stop();
+    voiceActive=false;
+    const vb=document.getElementById('voiceBtn'+id);
+    if(vb){ vb.className='voice-btn done'; document.getElementById('voiceTxt'+id).textContent='Notitie opgeslagen ✓'; }
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  voiceRec=new SR();
+  voiceRec.lang='nl-NL'; voiceRec.continuous=true; voiceRec.interimResults=true;
+  voiceRec.onstart=()=>{
+    voiceActive=true;
+    const vb=document.getElementById('voiceBtn'+id);
+    if(vb){ vb.className='voice-btn rec'; document.getElementById('voiceTxt'+id).textContent='Opname bezig... tik om te stoppen'; }
+  };
+  voiceRec.onresult=e=>{
+    let tekst='';
+    for(let i=0;i<e.results.length;i++) tekst+=e.results[i][0].transcript;
+    const vt=document.getElementById('voiceTranscript'+id);
+    if(vt){ vt.textContent=tekst; vt.classList.remove('hidden'); }
+    const nf=document.getElementById(targetField);
+    if(nf) nf.value=tekst;
+  };
+  voiceRec.onerror=e=>{ toast('Spraakfout: '+e.error,true); voiceActive=false; };
+  voiceRec.onend=()=>{
+    voiceActive=false;
+    const vb=document.getElementById('voiceBtn'+id);
+    if(vb && vb.className.includes('rec')){ vb.className='voice-btn done'; document.getElementById('voiceTxt'+id).textContent='Notitie opgeslagen ✓'; }
+  };
+  voiceRec.start();
+}
+
+async function slaaLogboek(){
+  if(!huidigeMarshalId){ toast('Niet beschikbaar voor voorzitter',true); return; }
+  const notitie = document.getElementById('lNotitie').value.trim();
+  if(!notitie){ toast('Voer een notitie in',true); return; }
+  try {
+    await sbP('meldingen',{
+      marshal_id: huidigeMarshalId,
+      type: 'logboek',
+      hole: selectedLogHole||null,
+      actie: 'geen',
+      notities: notitie
+    });
+    toast('Notitie opgeslagen ✓');
+    resetMelding();
+    laadHome();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function slaaIncident(){
+  if(!huidigeMarshalId){ toast('Niet beschikbaar voor voorzitter',true); return; }
+  const notitie = document.getElementById('iNotitie').value.trim();
+  const speler = document.getElementById('iSpeler').value.trim();
+  const actie = document.getElementById('iActie').value;
+  if(!notitie && !speler){ toast('Vul minimaal een toelichting of spelernaam in',true); return; }
+  try {
+    await sbP('meldingen',{
+      marshal_id: huidigeMarshalId,
+      type: selectedIncType||'anders',
+      hole: selectedIncHole||null,
+      actie,
+      notities: [speler?'Speler: '+speler:'', notitie].filter(Boolean).join('\n')||null
+    });
+    toast('Incident opgeslagen ✓');
+    resetMelding();
+    laadHome();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+// Legacy alias voor admin meldingen weergave
+async function slaaMelding(){ await slaaLogboek(); }
+
+// ─── PROFIEL ──────────────────────────────────────────────
+async function laadProfiel(){
+  if(!huidigeMarshalId){ return; }
+  try {
+    const data=await sbG('marshals','select=*&id=eq.'+huidigeMarshalId);
+    if(!data||!data[0]) return;
+    const m=data[0];
+    document.getElementById('profNaam').textContent=m.naam;
+    document.getElementById('profTel').value=m.telefoon||'';
+    document.getElementById('profEmail').value=m.email||'';
+    if(m.aed_datum){ 
+      document.getElementById('aedDatum').value=m.aed_datum; 
+      berekenAedStatus(m.aed_datum);
+      checkAedExpiry(m.aed_datum); 
+    } else {
+      berekenAedStatus(null);
+    }
+    // Stats
+    const [boekingen,meldingen]=await Promise.all([
+      sbG('dienst_boekingen','select=id&marshal_id=eq.'+huidigeMarshalId),
+      sbG('meldingen','select=id&marshal_id=eq.'+huidigeMarshalId)
+    ]);
+    document.getElementById('profStats').innerHTML=`
+      <div class="stat-row" onclick="toonGeboekteDiensten()" style="cursor:pointer">
+        <div class="stat-lbl">Geboekte diensten</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="stat-val">${(boekingen||[]).length}</div><span style="color:var(--tl);font-size:.8rem">›</span></div>
+      </div>
+      <div class="stat-row" onclick="toonMijnMeldingen()" style="cursor:pointer">
+        <div class="stat-lbl">Meldingen gemaakt</div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="stat-val">${(meldingen||[]).length}</div><span style="color:var(--tl);font-size:.8rem">›</span></div>
+      </div>
+    `;
+  } catch(e){ toast('Profiel laden mislukt: '+e.message,true); }
+}
+
+function berekenAedStatus(datum){
+  const card = document.getElementById('aedStatusCard');
+  const ic = document.getElementById('aedStatusIc');
+  const lbl = document.getElementById('aedStatusLabel');
+  const txt = document.getElementById('aedTxt');
+  if(!datum){
+    card.style.background='var(--cr)'; card.style.borderColor='var(--cd)';
+    ic.textContent='❓';
+    lbl.style.color='var(--tl)'; lbl.textContent='Niet gecertificeerd';
+    txt.textContent='Geen trainingsdatum ingevuld';
+    txt.style.color='var(--tl)';
+    return;
+  }
+  const verloop=new Date(datum); verloop.setFullYear(verloop.getFullYear()+1);
+  const nu = new Date();
+  if(verloop > nu){
+    const dagen = Math.floor((verloop - nu)/86400000);
+    card.style.background='var(--gp)'; card.style.borderColor='var(--gl)';
+    ic.textContent='✅';
+    lbl.style.color='var(--gd)'; lbl.textContent='Gecertificeerd';
+    txt.textContent='Geldig nog '+dagen+' dag'+(dagen===1?'':'en')+' — verloopt '+datumLang(verloop.toISOString().split('T')[0]);
+    txt.style.color='var(--gm)';
+  } else {
+    const dagenGeleden = Math.abs(Math.floor((verloop - nu)/86400000));
+    card.style.background='var(--redl)'; card.style.borderColor='var(--red)';
+    ic.textContent='❌';
+    lbl.style.color='var(--red)'; lbl.textContent='Certificering verlopen';
+    txt.textContent='Verlopen '+dagenGeleden+' dag'+(dagenGeleden===1?'':'en')+' geleden — plan hertraining';
+    txt.style.color='var(--red)';
+  }
+}
+
+function checkAedExpiry(datum){
+  if(!datum) return;
+  const verloop=new Date(datum); verloop.setFullYear(verloop.getFullYear()+1);
+  const dagen=Math.floor((verloop-new Date())/86400000);
+  const el=document.getElementById('aedWarn');
+  if(dagen<=30&&dagen>=0){
+    el.classList.remove('hidden');
+    document.getElementById('aedWarnTxt').textContent=`AED certificaat verloopt over ${dagen} dagen — plan bijscholing`;
+  } else if(dagen<0){
+    el.classList.remove('hidden');
+    document.getElementById('aedWarnTxt').textContent=`AED certificaat is ${Math.abs(dagen)} dagen geleden verlopen!`;
+  } else { el.classList.add('hidden'); }
+}
+
+async function slaaProfiel(){
+  if(!huidigeMarshalId) return;
+  try {
+    await sbPa('marshals','id=eq.'+huidigeMarshalId,{
+      telefoon:document.getElementById('profTel').value,
+      email:document.getElementById('profEmail').value,
+      aed_datum:document.getElementById('aedDatum').value||null,
+      aed_gecertificeerd:(()=>{ const d=document.getElementById('aedDatum').value; if(!d) return false; const v=new Date(d); v.setFullYear(v.getFullYear()+1); return v>new Date(); })()
+    });
+    checkAedExpiry(document.getElementById('aedDatum').value);
+    toast('Opgeslagen ✓');
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+// ─── PROFIEL OVERLAYS ─────────────────────────────────────
+async function toonGeboekteDiensten(){
+  const existing = document.getElementById('profielOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'slot-popup';
+  overlay.id = 'profielOverlay';
+  overlay.onclick = (e) => { if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `<div class="slot-popup-box" style="max-height:85vh;overflow-y:auto">
+    <div class="slot-popup-titel">Geboekte diensten</div>
+    <div class="slot-popup-sub" id="overlaySubDiensten">Laden...</div>
+    <div id="overlayDienstenLijst" style="margin-top:12px"></div>
+    <button class="btn bg2 bf" style="margin-top:12px" onclick="document.getElementById('profielOverlay').remove()">Sluiten</button>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  try {
+    const boekingen = await sbG('dienst_boekingen',
+      'select=slot_id,dienst_slots(datum,start_tijd,eind_tijd)&marshal_id=eq.'+huidigeMarshalId+'&order=dienst_slots(datum).desc'
+    );
+    const vandaag = new Date().toISOString().split('T')[0];
+    const lijst = (boekingen||[]).filter(b=>b.dienst_slots);
+    document.getElementById('overlaySubDiensten').textContent = lijst.length + ' dienst'+(lijst.length===1?'':'en');
+    if(!lijst.length){
+      document.getElementById('overlayDienstenLijst').innerHTML='<div class="empty">Nog geen diensten geboekt</div>';
+      return;
+    }
+    const html = lijst.map(b => {
+      const s = b.dienst_slots;
+      const dt = new Date(s.datum+'T12:00:00');
+      const dagStr = dt.getDate()+' '+MAANDEN[dt.getMonth()]+' '+dt.getFullYear();
+      const dagNm = ['zo','ma','di','wo','do','vr','za'][dt.getDay()];
+      const tijd = s.start_tijd.slice(0,5)+'–'+s.eind_tijd.slice(0,5);
+      const verleden = s.datum < vandaag;
+      return `<div class="slot-row${verleden?' verleden':''}">
+        <div class="slot-tijd" style="flex:1">${dagStr} <span style="color:var(--tl)">${dagNm}</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--tm)">${tijd}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('overlayDienstenLijst').innerHTML = html;
+  } catch(e){ document.getElementById('overlayDienstenLijst').innerHTML='<div class="empty">Fout bij laden</div>'; }
+}
+
+async function toonMijnMeldingen(){
+  const existing = document.getElementById('profielOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'slot-popup';
+  overlay.id = 'profielOverlay';
+  overlay.onclick = (e) => { if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `<div class="slot-popup-box" style="max-height:85vh;overflow-y:auto">
+    <div class="slot-popup-titel">Mijn meldingen</div>
+    <div class="slot-popup-sub" id="overlaySubMeld">Laden...</div>
+    <div id="overlayMeldLijst" style="margin-top:12px"></div>
+    <button class="btn bg2 bf" style="margin-top:12px" onclick="document.getElementById('profielOverlay').remove()">Sluiten</button>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  try {
+    const meldingen = await sbG('meldingen',
+      'select=id,type,hole,actie,notities,created_at&marshal_id=eq.'+huidigeMarshalId+'&order=created_at.desc'
+    );
+    const lijst = meldingen||[];
+    document.getElementById('overlaySubMeld').textContent = lijst.length + ' melding'+(lijst.length===1?'':'en');
+    if(!lijst.length){
+      document.getElementById('overlayMeldLijst').innerHTML='<div class="empty">Nog geen meldingen gemaakt</div>';
+      return;
+    }
+    const kleuren={slow_play:'#d85a30',bunker:'#854f0b',pitchmark:'#2d7a4f',kleding:'#1565c0',buggy:'#6a1b9a',betaling:'#c0392b',baan:'#795548',anders:'#555'};
+    const html = lijst.map(m => {
+      const dt = new Date(m.created_at);
+      const datStr = dt.getDate()+' '+MAANDEN[dt.getMonth()]+' '+dt.getFullYear();
+      const tijdStr3 = dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+      return `<div class="log-item">
+        <div class="log-dot" style="background:${kleuren[m.type]||'#888'}"></div>
+        <div style="flex:1">
+          <div class="log-t">${typeLabel(m.type)}${m.hole?' — hole '+m.hole:''}</div>
+          <div class="log-m">${datStr} · ${tijdStr3} · ${actieLabel(m.actie)}</div>
+          ${m.notities?`<div class="log-m" style="color:var(--tm);margin-top:2px">${m.notities}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('overlayMeldLijst').innerHTML = html;
+  } catch(e){ document.getElementById('overlayMeldLijst').innerHTML='<div class="empty">Fout bij laden</div>'; }
+}
+
+async function wijzigPin(){
+  const p1=document.getElementById('nieuwPin').value;
+  const p2=document.getElementById('bevestigPin').value;
+  if(p1.length!==4||!/^\d{4}$/.test(p1)){ toast('PIN moet 4 cijfers zijn',true); return; }
+  if(p1!==p2){ toast('PINs komen niet overeen',true); return; }
+  if(ZWAKKE_PINS.has(p1)){ toast('Kies een sterkere PIN',true); return; }
+  try {
+    const hash=await maakPinHash(p1);
+    await sbPa('marshals','id=eq.'+huidigeMarshalId,{pin_hash:hash});
+    document.getElementById('nieuwPin').value='';
+    document.getElementById('bevestigPin').value='';
+    toast('PIN gewijzigd ✓');
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+// ─── ADMIN ────────────────────────────────────────────────
+async function laadAdmin(){
+  initAlgParams();
+  try {
+    const [marshals,meldingen,slots]=await Promise.all([
+      sbG('marshals','select=*&actief=eq.true&order=naam.asc'),
+      sbG('meldingen','select=*,marshals(naam)&order=created_at.desc&limit=30'),
+      sbGAll('dienst_slots','select=*,dienst_boekingen(id,marshals(naam))&order=datum.asc,start_tijd.asc&datum=gte.'+new Date().toISOString().split('T')[0])
+    ]);
+    // Stats
+    const vandaag=new Date().toISOString().split('T')[0];
+    const seizoenStart=new Date().getFullYear()+'-04-01';
+    const aedCert=(marshals||[]).filter(m=>m.aed_gecertificeerd).length;
+    const verloopt=(marshals||[]).filter(m=>{
+      if(!m.aed_datum) return false;
+      const v=new Date(m.aed_datum); v.setFullYear(v.getFullYear()+1);
+      return (v-new Date())/86400000<=30;
+    }).length;
+    const meldSeizoen=(meldingen||[]).filter(m=>m.created_at>=seizoenStart).length;
+    document.getElementById('aMarsh').textContent=(marshals||[]).length;
+    document.getElementById('aAed').textContent=aedCert;
+    document.getElementById('aVerl').textContent=verloopt;
+    document.getElementById('aMeld').textContent=meldSeizoen;
+    // Marshal lijst
+    const ml=document.getElementById('marshalLijst');
+    if(!marshals||!marshals.length){ ml.innerHTML='<div class="empty">Geen marshals gevonden</div>'; }
+    else {
+      ml.innerHTML=marshals.map(m=>{
+        const init=m.naam.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        let badge,badgeKlasse;
+        if(!m.aed_gecertificeerd){ badge='Geen cert.'; badgeKlasse='pr'; }
+        else {
+          const v=new Date(m.aed_datum||'2000-01-01'); v.setFullYear(v.getFullYear()+1);
+          const d=(v-new Date())/86400000;
+          if(d<=30){ badge='Verloopt binnenkort'; badgeKlasse='pa'; }
+          else { badge='AED geldig'; badgeKlasse='pg'; }
+        }
+        const verwijderBtnHtml = isAdmin ? `<button class="btn bd bsm" onclick="event.stopPropagation();verwijderMarshal('${m.id}','${m.naam}')">Verwijder</button>` : '';
+        return `<div class="mrow" style="cursor:pointer" onclick="openMarshalProfiel('${m.id}')">
+          <div class="avatar">${init}</div>
+          <div style="flex:1"><div class="mname">${m.naam}</div>
+          <div class="mdet">${m.telefoon||'—'} · ${m.email||'—'}</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="pill ${badgeKlasse}">${badge}</span>
+            ${verwijderBtnHtml}
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // Slot beheer verplaatst naar Diensten tab — niet meer in Admin
+    // Alle meldingen
+    const am=document.getElementById('alleMeld');
+    if(!meldingen||!meldingen.length){ am.innerHTML='<div class="empty">Geen meldingen</div>'; return; }
+    const kleuren={slow_play:'#d85a30',bunker:'#854f0b',pitchmark:'#2d7a4f',kleding:'#1565c0',buggy:'#6a1b9a',betaling:'#c0392b',baan:'#795548',anders:'#555'};
+    am.innerHTML=meldingen.map(m=>`
+      <div class="log-item">
+        <div class="log-dot" style="background:${kleuren[m.type]||'#888'}"></div>
+        <div style="flex:1"><div class="log-t">${typeLabel(m.type)}${m.hole?' — hole '+m.hole:''}</div>
+        <div class="log-m">${m.marshals?m.marshals.naam:'—'} · ${datumKort(m.created_at)} · ${actieLabel(m.actie)}</div>
+        ${m.notities?`<div class="log-m" style="color:var(--tm);margin-top:2px">${m.notities}</div>`:''}
+        </div>
+      </div>`).join('');
+  } catch(e){ toast('Admin laden mislukt: '+e.message,true); }
+}
+
+async function voegMarshalToe(){
+  const naam=document.getElementById('addNaam').value.trim();
+  const tel=document.getElementById('addTel').value.trim();
+  const email=document.getElementById('addEmail').value.trim();
+  const aed=document.getElementById('addAed').value==='true';
+  const aedDat=document.getElementById('addAedDat').value||null;
+  if(!naam){ toast('Vul een naam in',true); return; }
+  const pin=genereerPin();
+  const pinHash=await maakPinHash(pin);
+  try {
+    await sbP('marshals',{naam,telefoon:tel,email,aed_gecertificeerd:aed,aed_datum:aedDat,pin_hash:pinHash,actief:true,rol:'marshal'});
+    sluitMo('moMarshalAdd');
+    document.getElementById('addNaam').value='';
+    document.getElementById('addTel').value='';
+    document.getElementById('addEmail').value='';
+    document.getElementById('addAed').selectedIndex=0;
+    document.getElementById('addAedDat').value='';
+    document.getElementById('pinNaam').textContent=naam;
+    document.getElementById('pinCode').textContent=pin;
+    openMo('moPinToon');
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function verwijderMarshal(id,naam){
+  if(!confirm('Marshal '+naam+' verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  try {
+    await sbPa('marshals','id=eq.'+id,{actief:false});
+    toast(naam+' verwijderd');
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function voegSlotToe(){
+  const datum=document.getElementById('slotDatum').value;
+  const start=document.getElementById('slotStart').value;
+  const eind=document.getElementById('slotEind').value;
+  const max=parseInt(document.getElementById('slotMax').value)||2;
+  const comp=document.getElementById('togComp').classList.contains('on');
+  if(!datum){ toast('Selecteer een datum',true); return; }
+  try {
+    await sbP('dienst_slots',{datum,start_tijd:start,eind_tijd:eind,max_marshals:max,wedstrijddag:comp});
+    sluitMo('moSlotAdd');
+    document.getElementById('slotDatum').value='';
+    document.getElementById('togComp').classList.remove('on');
+    toast('Slot opgeslagen ✓');
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function adminToggleSlot(slotId, datum, startTijd, eindTijd, isNuGeblokkeerd){
+  // Voorzitter klikt in weekgrid op een cel om te openen/sluiten
+  try {
+    if(isNuGeblokkeerd){
+      // Slot openen
+      await sbPa('dienst_slots','id=eq.'+slotId,{geblokkeerd: false});
+      toast('Slot weer beschikbaar ✓');
+    } else {
+      // Slot sluiten — maak slot aan als het nog niet bestaat
+      if(!slotId){
+        const nieuw = await sbP('dienst_slots',{
+          datum, start_tijd: startTijd+':00', eind_tijd: eindTijd+':00',
+          max_marshals: 1, wedstrijddag: false, geblokkeerd: true
+        });
+        if(!nieuw || !nieuw[0]) throw new Error('Aanmaken mislukt');
+      } else {
+        await sbPa('dienst_slots','id=eq.'+slotId,{geblokkeerd: true});
+      }
+      toast('Gemarkeerd als Niet nodig ✓');
+    }
+    // Herlaad slots en herrender grid
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = (slots||[]);
+    renderDiensten();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function toggleBlokSlot(id, isGeblokkeerd){
+  try {
+    await sbPa('dienst_slots','id=eq.'+id,{geblokkeerd: !isGeblokkeerd});
+    toast(isGeblokkeerd ? 'Slot vrijgegeven' : 'Slot geblokkeerd');
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+async function verwijderSlot(id){
+  if(!confirm('Dit slot verwijderen?')) return;
+  try {
+    await sbD('dienst_slots','id=eq.'+id);
+    toast('Slot verwijderd');
+    laadAdmin();
+  } catch(e){ toast('Fout: '+e.message,true); }
+}
+
+// ─── FLIGHT TRACKER ───────────────────────────────────────
+const HOLES_DATA = [
+  [1,4,16],[2,3,10],[3,4,6],[4,5,2],[5,3,18],[6,4,14],[7,5,4],[8,4,8],[9,4,12],
+  [10,4,17],[11,3,13],[12,4,5],[13,5,1],[14,3,15],[15,4,11],[16,4,7],[17,5,3],[18,4,9]
+];
+
+let trackerFlights = [];
+let trackerInterval = null;
+let verzoekPollingInterval = null;
+let meldPollingInterval = null;
+let dismissedKnelpunten = new Set(); // weggeklikte knelpunten (key = voor.id+achter.id)
+let trackerZoekFilter = '';
+let analyseUitgeklapt = false; // Startlijst analyse ingeklapt by default
+
+function getPaceSettings(){
+  return {
+    3: parseInt(document.getElementById('popPar3')?.value||11),
+    4: parseInt(document.getElementById('popPar4')?.value||13),
+    5: parseInt(document.getElementById('popPar5')?.value||16)
+  };
+}
+
+function cumTijden(gem_hcp, tee_kleur){
+  const pace = getPaceSettings();
+  const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
+  const adj = Math.max(0, (gem_hcp - 10) * hcpFactor);
+  // Rode tee correctie: -1.5 min op par 4/5
+  const teeAdj = tee_kleur === 'rood' ? -1.5 : tee_kleur === 'gemengd' ? -0.75 : 0;
+  const t = [0];
+  HOLES_DATA.forEach(([,par]) => {
+    const holeTijd = pace[par] + adj + (par >= 4 ? teeAdj : 0);
+    t.push(t[t.length-1] + Math.max(8, holeTijd));
+  });
+  return t;
+}
+
+function tijdNaarMinuten(t){
+  if(!t) return 0;
+  // Volledig ISO timestamp met datum (bijv. 2026-05-26T12:54:52+00) → UTC naar lokaal
+  if(t.includes('T') && t.length > 8){
+    const d = new Date(t);
+    return d.getHours()*60 + d.getMinutes();
+  }
+  // Gewone tijdstring HH:MM of HH:MM:SS — altijd lokaal, direct parsen
+  const str = t.slice(0,5);
+  const [h,m] = str.split(':').map(Number);
+  return h*60+m;
+}
+
+function verwachteHoleNu(f){
+  const nu = new Date();
+  const nuMin = nu.getHours()*60+nu.getMinutes();
+  const startMin = tijdNaarMinuten(f.starttijd);
+  const elapsed = nuMin - startMin;
+  if(elapsed < 0) return null;
+  const rt = f.ronde_type || '18holes';
+  const startIdx = rt === '9holes_achter' ? 9 : 0;
+  const eindIdx = rt === '9holes_voor' ? 9 : rt === 'south' ? 6 : 18;
+
+  // Als er een gemeten positie is, extrapoleer vanaf gemelde hole met standaard pace.
+  // Begrenzing: nooit verder dan wat het pure algoritme op basis van starttijd aangeeft.
+  if(f.laatste_hole && f.laatste_update){
+    const gemeldMin = tijdNaarMinuten(f.laatste_update);
+    const sindsGemeld = nuMin - gemeldMin;
+    if(sindsGemeld >= 0){
+      const pace = getPaceSettings();
+      const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
+      const adj = Math.max(0, (f.gem_hcp-10)*hcpFactor);
+      const nAdj = Math.max(0, ((f.n_spelers||2) - 2)) * 8 / 18;
+      const ct = cumTijden(f.gem_hcp||15, f.tee_kleur);
+
+      // Pure algoritme-schatting op basis van starttijd (bovengrens)
+      let algSchatting = startIdx + 1;
+      for(let i=startIdx; i<eindIdx; i++){
+        if(elapsed >= ct[i]-ct[startIdx]+nAdj*i && elapsed < ct[i+1]-ct[startIdx]+nAdj*(i+1)){
+          algSchatting = i+1; break;
+        }
+      }
+      if(elapsed >= ct[eindIdx]-ct[startIdx]+nAdj*eindIdx) algSchatting = eindIdx+1;
+
+      // Extrapoleer vanaf gemelde hole
+      let huidig = f.laatste_hole;
+      let resterend = sindsGemeld;
+      for(let h=f.laatste_hole; h<eindIdx; h++){
+        const [,par] = HOLES_DATA[h-1]||[0,4];
+        const holeTijd = Math.max(8, pace[par] + adj + nAdj);
+        if(resterend < holeTijd) return Math.min(h, algSchatting);
+        resterend -= holeTijd;
+        huidig = h+1;
+      }
+      return Math.min(huidig, algSchatting, eindIdx+1);
+    }
+  }
+
+  // Geen meting: gebruik pure algoritme aanname
+  const ct = cumTijden(f.gem_hcp||15, f.tee_kleur);
+  const nAdj = Math.max(0, ((f.n_spelers||2) - 2)) * 8 / 18;
+  for(let i=startIdx; i<eindIdx; i++){
+    if(elapsed >= ct[i]-ct[startIdx]+nAdj*i && elapsed < ct[i+1]-ct[startIdx]+nAdj*(i+1)) return i+1;
+  }
+  if(elapsed >= ct[eindIdx]-ct[startIdx]+nAdj*eindIdx) return eindIdx+1;
+  return startIdx+1;
+}
+
+function verwachteHoleTheorie(f){
+  // Puur theoretische positie op basis van starttijd en algoritme — geen meetpunt
+  const nu = new Date();
+  const nuMin = nu.getHours()*60+nu.getMinutes();
+  const startMin = tijdNaarMinuten(f.starttijd);
+  const elapsed = nuMin - startMin;
+  if(elapsed < 0) return null;
+  const rt = f.ronde_type || '18holes';
+  const startIdx = rt === '9holes_achter' ? 9 : 0;
+  const eindIdx = rt === '9holes_voor' ? 9 : rt === 'south' ? 6 : 18;
+  const ct = cumTijden(f.gem_hcp||15, f.tee_kleur);
+  const nAdj = Math.max(0, ((f.n_spelers||2) - 2)) * 8 / 18;
+  for(let i=startIdx; i<eindIdx; i++){
+    if(elapsed >= ct[i]-ct[startIdx]+nAdj*i && elapsed < ct[i+1]-ct[startIdx]+nAdj*(i+1)) return i+1;
+  }
+  if(elapsed >= ct[eindIdx]-ct[startIdx]+nAdj*eindIdx) return eindIdx+1;
+  return startIdx+1;
+}
+
+function flightStatus(f){
+  if(!f.laatste_hole) return 'gray';
+  // Vergelijk geëxtrapoleerde positie (op basis van meting) met theoretische positie
+  const geextrapoleerd = verwachteHoleNu(f);
+  const theorie = verwachteHoleTheorie(f);
+  if(geextrapoleerd === null || theorie === null) return 'gray';
+  const achter = theorie - geextrapoleerd; // positief = achter op schema
+  if(achter >= 3) return 'red';
+  if(achter >= 1) return 'amber';
+  return 'green';
+}
+
+async function laadTracker(){
+  const vandaag = new Date().toISOString().split('T')[0];
+  document.getElementById('trackerDatum').textContent = vandaag;
+  document.getElementById('uploadDatumPill').textContent = vandaag;
+
+  // Update klok
+  const nu = new Date();
+  document.getElementById('trackerKlok').textContent =
+    nu.getHours().toString().padStart(2,'0')+':'+nu.getMinutes().toString().padStart(2,'0');
+
+  try {
+    // Laad flights van vandaag
+    const flights = await sbG('flights', 'select=*&datum=eq.'+vandaag+'&order=starttijd.asc');
+    if(!flights || !flights.length){
+      trackerFlights = [];
+      renderTrackerLeeg();
+      return;
+    }
+    // Laad laatste update per flight
+    const flightIds = (flights||[]).map(f=>f.id);
+    // Haal meest recente update per flight op
+    const updates = await sbG('flight_updates',
+      'select=flight_id,hole,tijdstip&order=tijdstip.desc'
+    );
+    const latestPerFlight = {};
+    (updates||[]).forEach(u=>{
+      if(!latestPerFlight[u.flight_id]) latestPerFlight[u.flight_id] = u;
+    });
+    trackerFlights = (flights||[]).map(f=>({
+      ...f,
+      laatste_hole: latestPerFlight[f.id]?.hole || null,
+      laatste_update: latestPerFlight[f.id]?.tijdstip || null
+    }));
+    // Pre-game analyse voor iedereen
+    renderPreGame(trackerFlights);
+    renderTracker();
+  } catch(e){
+    trackerFlights = [];
+    renderTrackerLeeg();
+  }
+
+  // Start interval refresh elke 30s
+  if(trackerInterval) clearInterval(trackerInterval);
+  trackerInterval = setInterval(laadTracker, 30000);
+}
+
+function renderTrackerLeeg(){
+  const msg = '<div class="empty">Geen startlijst geladen voor vandaag</div>';
+  if(document.getElementById('trackerFlightLijst'))
+    document.getElementById('trackerFlightLijst').innerHTML = msg;
+  if(document.getElementById('dashFlightLijst'))
+    document.getElementById('dashFlightLijst').innerHTML = msg;
+  const pg = document.getElementById('trackerPreGame');
+  if(pg) pg.innerHTML = '';
+}
+
+function renderTracker(){
+  const nu = new Date();
+  const nuMin = nu.getHours()*60+nu.getMinutes();
+
+  // Filter actieve flights: gestart, en nog niet >30 min over verwachte rondetijd heen
+  const actief = trackerFlights.filter(f=>{
+    const sm = tijdNaarMinuten(f.starttijd);
+    if(nuMin < sm) return false; // nog niet gestart
+    const maxDuur = verwachteRondetijd(f) + 30;
+    return nuMin < sm + maxDuur;
+  });
+
+  const gesorteerd = [...actief].sort((a,b)=>{
+    const ord = {red:0,amber:1,green:2,gray:3};
+    return (ord[flightStatus(a)]||3) - (ord[flightStatus(b)]||3);
+  });
+
+  // Marshal view — met zoekfilter
+  const marshalEl = document.getElementById('trackerFlightLijst');
+  if(marshalEl){
+    let tonen = gesorteerd;
+    if(trackerZoekFilter){
+      tonen = trackerFlights.filter(f=>
+        (f.namen||[]).some(n=>n.toLowerCase().includes(trackerZoekFilter))
+      );
+    }
+    if(!tonen.length){
+      marshalEl.innerHTML = trackerZoekFilter
+        ? `<div class="empty">Geen flights gevonden voor "${trackerZoekFilter}"</div>`
+        : '<div class="empty">Geen actieve flights op dit moment</div>';
+    } else {
+      marshalEl.innerHTML = tonen.map(f => renderFlightItem(f, true)).join('');
+    }
+  }
+
+  // Dashboard view
+  if(isCaddymaster || isAdmin){
+    renderDashboard(gesorteerd, actief);
+  }
+}
+
+function renderFlightItem(f, klikbaar){
+  const nu = new Date();
+  const nuMin = nu.getHours()*60+nu.getMinutes();
+  const startMin = tijdNaarMinuten(f.starttijd);
+  const isKlaar = nuMin >= startMin + verwachteRondetijd(f);
+
+  const st = isKlaar ? 'gray' : flightStatus(f);
+  const vw = isKlaar ? null : verwachteHoleNu(f);
+  const th = isKlaar ? null : verwachteHoleTheorie(f);
+  const namen = (f.namen||[]).map(n => n.split(' ').slice(-1)[0]).join(', ') || '—';
+  const gemeld = f.laatste_hole ? 'hole '+f.laatste_hole : '—';
+  const verwacht = isKlaar ? 'klaar' : vw && vw < 19 ? 'nu ~hole '+vw : vw===19 ? 'klaar' : 'start '+f.starttijd?.slice(0,5);
+  const achter = (!isKlaar && th && vw) ? Math.max(0, th - vw) : 0;
+
+  let badgeTxt, badgeCls;
+  if(isKlaar){badgeTxt='klaar';badgeCls='fi-gray';}
+  else if(st==='red'){badgeTxt='⚠ '+achter+' hole achter';badgeCls='fi-red';}
+  else if(st==='amber'){badgeTxt=achter+' hole achter';badgeCls='fi-amber';}
+  else if(st==='green'){badgeTxt='op schema';badgeCls='fi-green';}
+  else {badgeTxt='geen data';badgeCls='fi-gray';}
+
+  const rt = f.ronde_type || '18holes';
+  const totaalHoles = rt === '18holes' ? 18 : rt === 'south' ? 6 : 9;
+  const startIdx = rt === '9holes_achter' ? 9 : 0;
+  const prog = f.laatste_hole ? Math.round((f.laatste_hole - startIdx - 1) / (totaalHoles - 1) * 100) : 0;
+  const vwProg = vw ? Math.round((vw - startIdx - 1) / (totaalHoles - 1) * 100) : (isKlaar ? 100 : 0);
+  const barKleur = st==='red'?'var(--red)':st==='amber'?'#d4a057':'var(--gl)';
+  const onclick = klikbaar ? `onclick="openHolePopup('${f.id}')"` : '';
+  const startHole = rt === '9holes_achter' ? 'H10' : 'H1';
+  const aantalHoles = rt === '18holes' ? '18H' : rt === 'south' ? '6H' : '9H';
+
+  return `<div class="flight-item fl-${st}" ${onclick}>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+        <div class="fi-naam">${namen}</div>
+        <div class="fi-badge ${badgeCls}">${badgeTxt}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="fi-meta">🕐 ${f.starttijd?.slice(0,5)||'—'}</div>
+        <div class="fi-meta" style="color:var(--blue);font-weight:600">${startHole} · ${aantalHoles}</div>
+        <div class="fi-meta">📍 ${gemeld}</div>
+        <div class="fi-meta" style="color:var(--tl)">${verwacht}</div>
+      </div>
+      <div class="fi-bar">
+        <div class="fi-fill" style="width:${prog}%;background:${barKleur}"></div>
+        <div class="fi-marker" style="left:${vwProg}%"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function verwachteRondetijd(f){
+  // Totale verwachte rondetijd in minuten op basis van flightsamenstelling en ronde-type
+  const pace = getPaceSettings();
+  const gem = f.gem_hcp || 15;
+  const n = f.n_spelers || 2;
+  const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
+  const adj = Math.max(0, (gem - 10) * hcpFactor);
+  const rt = f.ronde_type || '18holes';
+  const startIdx = rt === '9holes_achter' ? 9 : 0;
+  const eindIdx = rt === '9holes_voor' ? 9 : rt === 'south' ? 6 : 18;
+  const relevantHoles = HOLES_DATA.slice(startIdx, eindIdx);
+  let basis = relevantHoles.reduce((t,[,par]) => t + pace[par] + adj, 0);
+  // Correctie voor aantal spelers: elke extra speler boven 2 voegt ~8 min toe (naar rato holes)
+  basis += Math.max(0, (n - 2)) * 8 * (relevantHoles.length / 18);
+  return Math.round(basis);
+}
+
+function holeOpTijdstip(f, tijdMin){
+  // Geeft de verwachte hole voor een flight op een gegeven tijdstip (in minuten vanaf middernacht)
+  const startMin = tijdNaarMinuten(f.starttijd);
+  const elapsed = tijdMin - startMin;
+  if(elapsed < 0) return null;
+  const ct = cumTijden(f.gem_hcp||15, f.tee_kleur);
+  // Correctie voor n_spelers
+  const nAdj = Math.max(0, ((f.n_spelers||2) - 2)) * 8 / 18;
+  const ctAdj = ct.map((v,i) => v + nAdj * i);
+  for(let i=0;i<18;i++){
+    if(elapsed >= ctAdj[i] && elapsed < ctAdj[i+1]) return i+1;
+  }
+  if(elapsed >= ctAdj[18]) return 19;
+  return 1;
+}
+
+function tijdgatOpTijdstip(voor, achter, tijdMin){
+  // Bereken het tijdsgat in minuten tussen twee flights op een gegeven tijdstip.
+  // Het startinterval is de initiële buffer — het gat begint daar en slinkt naarmate
+  // de achterste flight sneller is dan de voorste.
+  const startVoorMin = tijdNaarMinuten(voor.starttijd);
+  const startAchterMin = tijdNaarMinuten(achter.starttijd);
+  const startInterval = startAchterMin - startVoorMin; // werkelijk startinterval in minuten
+
+  const elapsedAchter = tijdMin - startAchterMin;
+  if(elapsedAchter < 0) return null;
+
+  const ctVoor = cumTijden(voor.gem_hcp||15, voor.tee_kleur);
+  const ctAchter = cumTijden(achter.gem_hcp||15, achter.tee_kleur);
+  const nAdjVoor = Math.max(0, ((voor.n_spelers||2) - 2)) * 8 / 18;
+  const nAdjAchter = Math.max(0, ((achter.n_spelers||2) - 2)) * 8 / 18;
+
+  // Hole-index achterste flight op dit tijdstip
+  const holeAchter = holeOpTijdstip(achter, tijdMin);
+  if(!holeAchter || holeAchter >= 19) return null;
+  const hIdx = Math.max(0, holeAchter - 1);
+
+  // Hoeveel tijd heeft de achterste flight gespendeerd tot aan deze hole?
+  const tijdAchterOpHole = ctAchter[hIdx] + nAdjAchter * hIdx;
+
+  // Hoeveel tijd zou de voorste flight nodig hebben voor dezelfde hole?
+  const tijdVoorOpZelfdeHole = ctVoor[hIdx] + nAdjVoor * hIdx;
+
+  // Tijdsgat = startinterval + (hoeveel de voorste trager is dan de achterste op deze hole)
+  // Positief = voorste loopt nog voor; negatief = achterste heeft ingehaald
+  return startInterval + (tijdVoorOpZelfdeHole - tijdAchterOpHole);
+}
+
+function berekenPreGameKnelpunten(flights){
+  const DREMPEL_DREIGT = 5;  // minuten: marshal gaan observeren
+  const DREMPEL_ONTSTAAN = 2; // minuten: marshal ingrijpen
+
+  const gesorteerd = [...flights].sort((a,b) => tijdNaarMinuten(a.starttijd) - tijdNaarMinuten(b.starttijd));
+  const knelpunten = [];
+
+  for(let i=1; i<gesorteerd.length; i++){
+    const voor = gesorteerd[i-1];
+    const achter = gesorteerd[i];
+
+    // Alleen flights op dezelfde baan en hetzelfde ronde-type vergelijken
+    if((voor.ronde_type||'18holes') !== (achter.ronde_type||'18holes')) continue;
+
+    const startAchterMin = tijdNaarMinuten(achter.starttijd);
+    const rtVoor = verwachteRondetijd(voor);
+    const rtAchter = verwachteRondetijd(achter);
+    const delta = rtVoor - rtAchter; // positief = achter is sneller
+
+    // Geen risico als achterste flight niet sneller is dan voorste
+    if(delta <= 0) continue;
+
+    // Bepaal eindhole op basis van ronde_type
+    const rt = achter.ronde_type || '18holes';
+    const eindHole = rt === '9holes_voor' ? 9 : rt === '9holes_achter' ? 18 : rt === 'south' ? 6 : 18;
+    const aantalHoles = rt === '18holes' ? 18 : rt === 'south' ? 6 : 9;
+
+    const deltaPerHole = delta / aantalHoles;
+    const vierbalVoorTweebal = (voor.n_spelers >= 3) && (achter.n_spelers <= 2);
+    const hcpVerschil = (voor.gem_hcp||15) - (achter.gem_hcp||15);
+
+    // Simuleer tijdsgat minuut voor minuut, maximaal rondetijd achterste + 30 min
+    let dreigtHole = null, dreigtTijd = null;
+    let ontstaanHole = null, ontstaanTijd = null;
+    const maxOffset = rtAchter + 30;
+
+    for(let minOffset=0; minOffset<=maxOffset; minOffset+=1){
+      const tijdMin = startAchterMin + minOffset;
+      const gat = tijdgatOpTijdstip(voor, achter, tijdMin);
+      if(gat === null) continue;
+
+      const holeAchter = holeOpTijdstip(achter, tijdMin);
+      if(!holeAchter || holeAchter > eindHole) break;
+
+      if(!dreigtHole && gat <= DREMPEL_DREIGT){
+        dreigtHole = holeAchter;
+        dreigtTijd = tijdMin;
+      }
+      if(!ontstaanHole && gat <= DREMPEL_ONTSTAAN){
+        ontstaanHole = holeAchter;
+        ontstaanTijd = tijdMin;
+        break;
+      }
+    }
+
+    // Geen knelpunt als tijdsgat nooit onder drempel komt
+    if(!dreigtHole) continue;
+
+    // Ernst bepalen op basis van wanneer het knelpunt ontstaat
+    const ernst = ontstaanHole ? 'red' : 'amber';
+
+    // Redenering
+    const redenen = [];
+    if(deltaPerHole >= 0.5) redenen.push(`${deltaPerHole.toFixed(1)} min/hole sneller`);
+    else redenen.push(`${Math.round(delta)} min sneller over ${aantalHoles} holes`);
+    if(hcpVerschil >= 8) redenen.push(`hcp-verschil ${Math.round(hcpVerschil)}`);
+    if(vierbalVoorTweebal) redenen.push(`${voor.n_spelers}-bal voor ${achter.n_spelers}-bal`);
+    const reden = redenen.join(' · ');
+
+    knelpunten.push({
+      ernst,
+      voor, achter,
+      dreigtHole, dreigtTijd,
+      ontstaanHole, ontstaanTijd,
+      // Backwards compat velden voor renderPreGame
+      checkHole: dreigtHole, checkTijd: dreigtTijd,
+      contactHole: ontstaanHole, contactTijd: ontstaanTijd,
+      delta: Math.round(delta),
+      deltaPerHole,
+      reden
+    });
+  }
+
+  return knelpunten.sort((a,b)=>{
+    if(a.ernst !== b.ernst) return a.ernst==='red' ? -1 : 1;
+    return (a.dreigtTijd||999) - (b.dreigtTijd||999);
+  });
+}
+
+function minNaarTijdStr(min){
+  if(!min) return '—';
+  const h = Math.floor(min/60);
+  const m = min%60;
+  return h.toString().padStart(2,'0')+':'+m.toString().padStart(2,'0');
+}
+
+function renderPreGame(flights){
+  const el = document.getElementById('trackerPreGame');
+  if(!el) return;
+  if(!flights || !flights.length){ el.innerHTML = ''; return; }
+
+  // Combineer statische knelpunten (startlijst) met dynamische (op basis van marshal input)
+  const statisch = berekenPreGameKnelpunten(flights)
+    .filter(k => !dismissedKnelpunten.has(k.voor.id+'|'+ k.achter.id));
+
+  // Dynamische knelpunten: flights met gemeten positie die op elkaar aflopen
+  const dynamisch = berekenDynamischeKnelpunten(flights)
+    .filter(k => !dismissedKnelpunten.has('dyn|'+ k.voor.id+'|'+ k.achter.id));
+
+  const alleKnelpunten = [...dynamisch, ...statisch.filter(sk => {
+    return !dynamisch.some(dk => dk.voor.id===sk.voor.id && dk.achter.id===sk.achter.id);
+  })].sort((a,b)=>{
+    if(a.ernst !== b.ernst) return a.ernst==='red' ? -1 : 1;
+    return (a.contactTijd||999) - (b.contactTijd||999);
+  });
+
+  const roodN = alleKnelpunten.filter(k=>k.ernst==='red').length;
+  const amberN = alleKnelpunten.filter(k=>k.ernst==='amber').length;
+  const pill = !alleKnelpunten.length
+    ? `<span class="pill pg">✓ Geen knelpunten</span>`
+    : roodN ? `<span class="pill pr">${roodN} kritiek</span>`
+    : `<span class="pill pa">${amberN} let op</span>`;
+
+  let html = `<div class="card" style="margin-bottom:10px">
+    <div class="ch" onclick="toggleAnalyse()" style="cursor:pointer;user-select:none">
+      <div class="ct">Startlijst analyse</div>
+      <div style="display:flex;align-items:center;gap:6px">${pill}<span style="font-size:.75rem;color:var(--tl)">${analyseUitgeklapt ? '▲' : '▼'}</span></div>
+    </div>
+    <div class="cb" id="analyseBody" style="padding:8px;${analyseUitgeklapt ? '' : 'display:none'}">`;
+
+  if(!alleKnelpunten.length){
+    html += `<div style="font-size:.8rem;color:var(--tl);padding:6px 4px">Alle flights hebben voldoende ruimte.</div>`;
+  }
+
+  alleKnelpunten.forEach(k=>{
+    const isDyn = !!k.isDynamisch;
+    const kleur = k.ernst==='red' ? 'var(--red)' : '#d4a057';
+    const dismissKey = isDyn ? 'dyn|'+ k.voor.id+'|'+ k.achter.id : k.voor.id+'|'+ k.achter.id;
+    const dynLabel = isDyn ? `<span style="font-size:.6rem;color:var(--blue);margin-left:4px">● live</span>` : '';
+
+    const namenVoor = (k.voor.namen||[]).map(n=>n.split(' ').slice(-1)[0]).join('/');
+    const namenAchter = (k.achter.namen||[]).map(n=>n.split(' ').slice(-1)[0]).join('/');
+
+    const typeLabel = t => t==='18holes' ? 'NC 18' : t==='9holes_achter' ? 'NC 2e9' : t==='9holes_voor' ? 'NC 1e9' : 'SC';
+    const infoVoor = `${k.voor.starttijd?.slice(0,5)} · ${typeLabel(k.voor.ronde_type)}`;
+    const infoAchter = `${k.achter.starttijd?.slice(0,5)} · ${typeLabel(k.achter.ronde_type)}`;
+
+    const dreigtStr = k.dreigtHole ? `hole ${k.dreigtHole} om ${minNaarTijdStr(k.dreigtTijd)}` : '—';
+    const ontstaanStr = k.ontstaanHole ? `hole ${k.ontstaanHole} om ${minNaarTijdStr(k.ontstaanTijd)}` : null;
+
+    html += `<div class="knelpunt-card kn-${k.ernst}" style="position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:.78rem;color:var(--td);line-height:1.5;flex:1">
+          <span style="font-weight:600">${namenAchter}</span>
+          <span style="color:var(--tl)">(${infoAchter})</span>${dynLabel}
+          <span style="color:var(--tl)"> loopt in op </span>
+          <span style="font-weight:600">${namenVoor}</span>
+          <span style="color:var(--tl)">(${infoVoor})</span>
+          <span style="color:var(--tl)"> · ${k.reden}</span>
+        </div>
+        <button onclick="dismissKnelpunt('${dismissKey}')" title="Loopt prima, verberg"
+          style="background:none;border:1px solid var(--cd);border-radius:4px;padding:1px 8px;font-size:.65rem;color:var(--tl);cursor:pointer;flex-shrink:0;margin-left:8px">✓ OK</button>
+      </div>
+      <div style="font-size:.72rem;display:flex;flex-direction:column;gap:3px;margin-top:4px">
+        <div style="color:#d4a057;font-weight:500">👁 Check ${dreigtStr}</div>
+        ${ontstaanStr ? `<div style="color:${kleur};font-weight:500">⚠ Ingrijpen verwacht bij ${ontstaanStr}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  el.innerHTML = html;
+}
+
+function berekenDynamischeKnelpunten(flights){
+  // Op basis van werkelijke posities: welke flights lopen op elkaar in?
+  const nu = new Date();
+  const nuMin = nu.getHours()*60+nu.getMinutes();
+  const knelpunten = [];
+
+  const metPositie = flights.filter(f=>f.laatste_hole && f.laatste_update);
+  if(metPositie.length < 2) return [];
+
+  const gesorteerd = [...flights].sort((a,b)=>tijdNaarMinuten(a.starttijd)-tijdNaarMinuten(b.starttijd));
+
+  for(let i=1; i<gesorteerd.length; i++){
+    const voor = gesorteerd[i-1];
+    const achter = gesorteerd[i];
+    // Alleen flights op dezelfde baan vergelijken
+    if((voor.ronde_type||'18holes') !== (achter.ronde_type||'18holes')) continue;
+    if(!voor.laatste_hole || !achter.laatste_hole) continue;
+
+    const vwVoor = verwachteHoleNu(voor);
+    const vwAchter = verwachteHoleNu(achter);
+    if(!vwVoor || !vwAchter) continue;
+
+    // Gebruik tijdsgat in plaats van hole-gat — anders worden flights met
+    // verschillend startinterval ten onrechte als knelpunt gezien
+    const tijdGat = tijdgatOpTijdstip(voor, achter, nuMin);
+    if(tijdGat === null || tijdGat > 5) continue; // geen knelpunt als gat > 5 minuten
+
+    const gat = vwVoor - vwAchter; // voor info in badge
+
+    let ernst = null;
+    if(tijdGat <= 2) ernst = 'red';
+    else if(tijdGat <= 5) ernst = 'amber';
+    if(!ernst) continue;
+
+    // Voorspel contactpunt
+    let contactHole = vwVoor;
+    let contactTijd = nuMin + gat * 13; // schatting op basis van gemiddelde hole-tijd
+
+    const namenVoor = (voor.namen||[]).map(n=>n.split(' ').slice(-1)[0]).join(', ');
+    const namenAchter = (achter.namen||[]).map(n=>n.split(' ').slice(-1)[0]).join(', ');
+
+    knelpunten.push({
+      ernst, voor, achter, namenVoor, namenAchter,
+      dreigtHole: contactHole, dreigtTijd: contactTijd,
+      ontstaanHole: ernst==='red' ? contactHole : null,
+      ontstaanTijd: ernst==='red' ? contactTijd : null,
+      contactHole, contactTijd,
+      delta: Math.round((verwachteRondetijd(voor) - verwachteRondetijd(achter))),
+      reden: `gat nog ${gat} hole${gat===1?'':'s'} — gemeten posities`,
+      isDynamisch: true
+    });
+  }
+  return knelpunten;
+}
+
+function dismissKnelpunt(key){
+  dismissedKnelpunten.add(key);
+  renderPreGame(trackerFlights);
+}
+
+function toggleAnalyse(){
+  analyseUitgeklapt = !analyseUitgeklapt;
+  renderPreGame(trackerFlights);
+}
+
+function togglePositie(){
+  const body = document.getElementById('positieBody');
+  const ico = document.getElementById('positieToggleIco');
+  if(!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if(ico) ico.textContent = open ? '▼' : '▲';
+}
+
+function filterTracker(zoek){
+  trackerZoekFilter = zoek.toLowerCase();
+  document.getElementById('trackerZoekWis').classList.toggle('hidden', !zoek);
+  renderTracker();
+}
+
+function wisZoek(){
+  document.getElementById('trackerZoek').value = '';
+  filterTracker('');
+}
+
+function renderDashboard(gesorteerd, actief){
+  const rood = gesorteerd.filter(f=>flightStatus(f)==='red');
+  const amber = gesorteerd.filter(f=>flightStatus(f)==='amber');
+  const warnEl = document.getElementById('dashWaarschuwingen');
+  if(warnEl){
+    let html = '';
+    if(rood.length){
+      html += `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--red);border-radius:0 var(--rl) var(--rl) 0">
+        <div class="ch"><div class="ct" style="color:var(--red)">⚠ Ingrijpen vereist (${rood.length})</div></div>
+        <div class="cb" style="padding:8px">${rood.map(f=>renderFlightItem(f,false)).join('')}</div>
+      </div>`;
+    }
+    if(amber.length){
+      html += `<div class="card" style="margin-bottom:10px;border-left:3px solid #d4a057;border-radius:0 var(--rl) var(--rl) 0">
+        <div class="ch"><div class="ct" style="color:var(--amber)">Let op (${amber.length})</div></div>
+        <div class="cb" style="padding:8px">${amber.map(f=>renderFlightItem(f,false)).join('')}</div>
+      </div>`;
+    }
+    if(!rood.length && !amber.length){
+      html = `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--gl);border-radius:0 var(--rl) var(--rl) 0">
+        <div class="cb" style="padding:12px;text-align:center;color:var(--gm);font-size:.85rem">✓ Alle flights op schema</div>
+      </div>`;
+    }
+    warnEl.innerHTML = html;
+  }
+
+  const countEl = document.getElementById('dashFlightCount');
+  if(countEl) countEl.textContent = actief.length + ' actief';
+
+  const lijstEl = document.getElementById('dashFlightLijst');
+  if(lijstEl){
+    if(!gesorteerd.length){
+      lijstEl.innerHTML = '<div class="empty">Geen actieve flights</div>';
+    } else {
+      lijstEl.innerHTML = gesorteerd.map(f=>renderFlightItem(f,false)).join('');
+    }
+  }
+}
+
+function openHolePopup(flightId){
+  const f = trackerFlights.find(x=>x.id===flightId);
+  if(!f) return;
+  const naam = (f.namen||[])[0]?.split(' ').slice(-1)[0] || '—';
+  const extra = (f.namen||[]).length > 1 ? ' + '+((f.namen||[]).length-1)+' spelers' : '';
+
+  const existing = document.getElementById('holePopupEl');
+  if(existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.className = 'hole-popup';
+  popup.id = 'holePopupEl';
+  popup.onclick = (e)=>{ if(e.target===popup) popup.remove(); };
+
+  let gridHtml = '';
+  for(let h=1;h<=18;h++){
+    const isCross = h===10;
+    const isSel = f.laatste_hole === h;
+    gridHtml += `<button class="hgbtn${isCross?' cross':''}${isSel?' sel':''}" onclick="selecteerHole('${flightId}',${h})">${h}</button>`;
+  }
+
+  popup.innerHTML = `<div class="hole-popup-box">
+    <div class="hole-popup-titel">${naam}${extra}</div>
+    <div class="hole-popup-sub">Start ${f.starttijd?.slice(0,5)||'—'} · gem. hcp ${f.gem_hcp||'—'} · ${f.n_spelers||'?'} spelers</div>
+    <div class="hole-grid-popup">${gridHtml}</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn bg2" style="flex:1" onclick="document.getElementById('holePopupEl').remove()">Annuleer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(popup);
+}
+
+async function selecteerHole(flightId, hole){
+  const popup = document.getElementById('holePopupEl');
+  if(popup) popup.remove();
+  try {
+    await sbP('flight_updates',{
+      flight_id: flightId,
+      marshal_id: huidigeMarshalId||null,
+      hole: hole
+    });
+    // Update lokaal
+    const f = trackerFlights.find(x=>x.id===flightId);
+    if(f){ f.laatste_hole=hole; f.laatste_update=new Date().toISOString(); }
+    renderTracker();
+    toast('Positie gemeld: hole '+hole+' ✓');
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function verwerkCSVUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  const feedbackEl = document.getElementById('uploadFeedback');
+  feedbackEl.textContent = 'Bezig met verwerken...';
+
+  const text = await file.text();
+  const lines = text.split('\n').filter(l=>l.trim());
+  const sep = lines[0].includes(';') ? ';' : ',';
+  const headers = lines[0].split(sep).map(h=>h.trim().replace(/^\uFEFF/,''));
+  const rows = lines.slice(1).map(l=>{
+    const vals = l.split(sep);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').trim());
+    return obj;
+  });
+
+  // Groepeer per lus+starttijd — alle North en South Course flights
+  // 18-holes flights staan twee keer in de CSV: eerste keer met gevulde Crossover (echte start),
+  // tweede keer als crossover-rij (Lus=2de 9 holes, Crossover leeg, Ronde=18 Holes) → overslaan.
+  // 18-holes vanaf hole 10: omgekeerd (Lus=1ste 9 holes, Crossover leeg, Ronde=18 Holes vanaf hole 10) → overslaan.
+  const byFlight = {};
+  rows.forEach(r=>{
+    const lus = r['Lus']||'';
+    const ronde = r['Ronde']||'';
+    const tijd = r['Starttijd']||'';
+    const crossover = r['Crossover']||'';
+    const spelerRuw = r['Speler']||'';
+    if(!tijd) return;
+
+    // Sla South Course flights over
+    if(lus.includes('South Course') || ronde.includes('South Course')) return;
+
+    // Sla Player Gap Flight rijen over (hele flight negeren)
+    if(spelerRuw.startsWith('Player Gap Flight')) return;
+
+    // Sla crossover-rijen over voor 18-holes flights:
+    // - NC 18 Holes: echte start heeft Crossover gevuld; crossover-rij heeft Lus=2de 9 holes + Crossover leeg
+    if((ronde === 'North Course 18 Holes' || ronde.includes('18 Holes')) &&
+       lus.includes('2de 9') && !crossover) return;
+    // - NC 18 Holes vanaf hole 10: echte start heeft Crossover gevuld; crossover-rij heeft Lus=1ste 9 holes + Crossover leeg
+    if(ronde.includes('18 Holes vanaf hole 10') && lus.includes('1ste 9') && !crossover) return;
+
+    let rondeType = null;
+    if(ronde.includes('18 Holes vanaf hole 10')) rondeType = '18holes_vanaf10';
+    else if(ronde === 'North Course 18 Holes' || ronde.includes('18 Holes')) rondeType = '18holes';
+    else if(ronde.includes('1ste 9')) rondeType = '9holes_voor';
+    else if(ronde.includes('2de 9')) rondeType = '9holes_achter';
+    // South Course flights worden hierboven al overgeslagen
+    if(!rondeType) return;
+
+    const key = lus.trim()+'|'+tijd;
+    if(!byFlight[key]) byFlight[key] = {
+      starttijd: tijd, namen:[], hcps:[], geslachten:[],
+      crossover, rondeType, lus: lus.trim()
+    };
+    const speler = r['Speler']||'';
+    const naam = speler.split('(')[0].trim();
+    // Sla systeem-placeholders over
+    // Sla systeem-placeholders over: 'Player Gap Flight' of puur numerieke namen
+    if(naam.startsWith('Player Gap Flight')) return;
+    if(/^\d+$/.test(naam)) return;
+    const m = speler.match(/\(([0-9.+-]+)\)/);
+    const geslacht = r['Geslacht']||'Onbekend';
+    if(naam) byFlight[key].namen.push(naam);
+    if(m) byFlight[key].hcps.push(parseFloat(m[1]));
+    byFlight[key].geslachten.push(geslacht);
+  });
+
+  const vandaag = new Date().toISOString().split('T')[0];
+  const flightLijst = Object.values(byFlight);
+
+  if(!flightLijst.length){
+    feedbackEl.textContent = '⚠ Geen flights gevonden in dit bestand.';
+    return;
+  }
+
+  try {
+    // Bouw sleutelset van nieuwe startlijst
+    const nieuweKeys = new Set(
+      flightLijst.map(f => f.starttijd+':00'+'|'+f.rondeType)
+    );
+
+    // Haal bestaande flights van vandaag op
+    const bestaand = await sbG('flights','select=id,starttijd,ronde_type&datum=eq.'+vandaag);
+    const bestaandMap = {};
+    (bestaand||[]).forEach(f=>{
+      bestaandMap[f.starttijd+'|'+f.ronde_type] = f.id;
+    });
+
+    // Bepaal vervallen flights: bestonden maar komen niet terug in nieuwe upload
+    const vervallenIds = (bestaand||[])
+      .filter(f => !nieuweKeys.has(f.starttijd+'|'+f.ronde_type))
+      .map(f => f.id);
+
+    // Verwijder flight_updates van vervallen flights
+    for(const fid of vervallenIds){
+      await sbD('flight_updates','flight_id=eq.'+fid);
+    }
+    // Verwijder vervallen flights zelf
+    for(const fid of vervallenIds){
+      await sbD('flights','id=eq.'+fid);
+    }
+
+    // Verwijder oude startlijst records van vandaag (opruimen)
+    await sbD('startlijsten','datum=eq.'+vandaag);
+
+    // Maak nieuw startlijst record aan
+    const sl = await sbP('startlijsten',{
+      datum: vandaag,
+      bestandsnaam: file.name,
+      geupload_door: 'caddymaster'
+    });
+    if(!sl||!sl[0]) throw new Error('Startlijst aanmaken mislukt');
+    const startlijstId = sl[0].id;
+
+    // Verwerk elke flight uit de nieuwe upload
+    for(const f of flightLijst){
+      const nVrouwen = f.geslachten.filter(g=>g==='Vrouw').length;
+      const nMannen = f.geslachten.filter(g=>g==='Man').length;
+      const pctVrouwen = f.geslachten.length > 0 ? nVrouwen/f.geslachten.length : 0;
+      const teeKleur = pctVrouwen > 0.6 ? 'rood' : pctVrouwen > 0.3 ? 'gemengd' : 'geel';
+      const starttijdFull = f.starttijd+':00';
+      const flightKey = starttijdFull+'|'+f.rondeType;
+      const bestaandId = bestaandMap[flightKey];
+
+      const fd = {
+        startlijst_id: startlijstId,
+        datum: vandaag,
+        starttijd: starttijdFull,
+        namen: f.namen,
+        n_spelers: f.namen.length,
+        n_vrouwen: nVrouwen,
+        n_mannen: nMannen,
+        gem_hcp: f.hcps.length ? Math.round(f.hcps.reduce((a,b)=>a+b,0)/f.hcps.length*10)/10 : 15,
+        tee_kleur: teeKleur,
+        ronde_type: f.rondeType
+      };
+
+      if(bestaandId){
+        // Terugkerende flight: update metadata, flight_updates blijven intact
+        await sbPa('flights','id=eq.'+bestaandId, fd);
+      } else {
+        // Nieuwe flight: insert
+        await sbP('flights', fd);
+      }
+    }
+
+    feedbackEl.textContent = `✓ ${flightLijst.length} flights geladen uit ${file.name}${vervallenIds.length ? ' · '+vervallenIds.length+' vervallen' : ''}`;
+    document.getElementById('uploadDatumPill').textContent = vandaag;
+    dismissedKnelpunten.clear();
+    input.value = '';
+    await laadTracker();
+    renderPreGame(trackerFlights);
+    toast('Startlijst geladen ✓');
+  } catch(e){
+    feedbackEl.textContent = '⚠ Fout: '+e.message;
+    toast('Upload mislukt: '+e.message, true);
+  }
+}
+
+// ─── ALGORITME ANALYSE & PARAMETERS ──────────────────────
+
+// Huidige parameters (worden geladen/opgeslagen in Supabase indien beschikbaar)
+let algParams = {
+  par3: 11, par4: 13, par5: 16,
+  hcpAdj: 0.05,        // min extra per hcp punt boven 10 (bijgesteld: HCP is zwakke tempo-voorspeller)
+  flightAdj: 8,        // min extra per speler boven 2
+  teeRoodAdj: -1.5,    // min korting op par4/5 voor rode tee
+  teeGemengdAdj: -0.75
+};
+
+function renderParamTabel(voorstel){
+  const el = document.getElementById('paramTabel');
+  if(!el) return;
+  const params = [
+    {key:'par3', label:'Par 3', eenheid:'min'},
+    {key:'par4', label:'Par 4', eenheid:'min'},
+    {key:'par5', label:'Par 5', eenheid:'min'},
+    {key:'hcpAdj', label:'Hcp correctie (per punt boven 10)', eenheid:'min'},
+    {key:'flightAdj', label:'Flightgrootte (per extra speler boven 2)', eenheid:'min'},
+    {key:'teeRoodAdj', label:'Rode tee correctie (par 4/5)', eenheid:'min'},
+  ];
+
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
+  html += '<tr style="border-bottom:1.5px solid var(--cd)"><th style="text-align:left;padding:5px 4px;color:var(--tl)">Parameter</th><th style="padding:5px 4px;color:var(--tl)">Huidig</th>';
+  if(voorstel) html += '<th style="padding:5px 4px;color:var(--gd)">Voorstel</th><th style="padding:5px 4px"></th>';
+  html += '</tr>';
+
+  params.forEach(p=>{
+    const huidig = algParams[p.key];
+    const vw = voorstel?.[p.key];
+    const verschil = vw !== undefined ? vw - huidig : null;
+    const kleur = verschil > 0 ? 'var(--amber)' : verschil < 0 ? 'var(--gm)' : 'var(--tl)';
+    html += `<tr style="border-bottom:1px solid var(--cd)">
+      <td style="padding:6px 4px;color:var(--tm)">${p.label}</td>
+      <td style="padding:6px 4px;text-align:center;font-family:'IBM Plex Mono',monospace">${huidig} ${p.eenheid}</td>`;
+    if(voorstel){
+      html += `<td style="padding:6px 4px;text-align:center;font-family:'IBM Plex Mono',monospace;color:${kleur}">${vw !== undefined ? vw+' '+p.eenheid : '—'}</td>
+      <td style="padding:6px 4px;text-align:center">`;
+      if(vw !== undefined && vw !== huidig){
+        html += `<button onclick="pasParamAan('${p.key}',${vw})" style="font-size:.65rem;padding:3px 8px;background:var(--gm);color:#fff;border:none;border-radius:4px;cursor:pointer">Overnemen</button>`;
+      } else if(vw !== undefined){
+        html += `<span style="color:var(--gl);font-size:.75rem">✓</span>`;
+      }
+      html += '</td>';
+    }
+    html += '</tr>';
+  });
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+function pasParamAan(key, waarde){
+  algParams[key] = waarde;
+  // Sync naar pace inputs indien zichtbaar
+  if(key==='par3' && document.getElementById('popPar3')) document.getElementById('popPar3').value = waarde;
+  if(key==='par4' && document.getElementById('popPar4')) document.getElementById('popPar4').value = waarde;
+  if(key==='par5' && document.getElementById('popPar5')) document.getElementById('popPar5').value = waarde;
+  renderParamTabel(null);
+  document.getElementById('paramStatusPill').textContent = 'Bijgewerkt ✓';
+  document.getElementById('paramStatusPill').style.background = 'var(--gp)';
+  toast('Parameter bijgewerkt ✓');
+}
+
+async function laadParamVoorstel(){
+  const el = document.getElementById('analysePanel');
+  const pill = document.getElementById('analyseDataPill');
+  el.innerHTML = '<div class="loading">Data analyseren...</div>';
+
+  try {
+    // Haal alle flight_updates op met bijbehorende flight data
+    const updates = await sbG('flight_updates',
+      'select=flight_id,hole,tijdstip,flights(starttijd,gem_hcp,n_spelers,tee_kleur,ronde_type,datum)&order=tijdstip.asc'
+    );
+
+    if(!updates || updates.length < 5){
+      el.innerHTML = '<div class="empty">Onvoldoende data — minimaal 5 metingen nodig voor analyse</div>';
+      pill.textContent = updates?.length || 0;
+      return;
+    }
+
+    // Bereken werkelijke hole-tijden per meting
+    const metingen = [];
+    // Groepeer per flight
+    const perFlight = {};
+    updates.forEach(u=>{
+      if(!u.flights) return;
+      const fid = u.flight_id;
+      if(!perFlight[fid]) perFlight[fid] = {flight: u.flights, updates: []};
+      perFlight[fid].updates.push(u);
+    });
+
+    // Per flight: bereken werkelijke minuten per hole
+    Object.values(perFlight).forEach(({flight, updates: upds})=>{
+      if(upds.length < 1) return;
+      const startMin = tijdNaarMinuten(flight.starttijd);
+      upds.forEach(u=>{
+        const gemeldMin = tijdNaarMinuten(u.tijdstip);
+        const elapsed = gemeldMin - startMin;
+        if(elapsed <= 0 || elapsed > 360) return;
+        const hole = u.hole;
+        // Verwachte cumulatieve tijd voor deze hole
+        const ct = cumTijden(flight.gem_hcp||15, flight.tee_kleur);
+        const verwachtElapsed = ct[hole-1] || 0;
+        // Snelheidsfactor
+        const factor = verwachtElapsed > 0 ? elapsed / verwachtElapsed : 1;
+        metingen.push({
+          hole, elapsed, verwachtElapsed, factor,
+          gem_hcp: flight.gem_hcp||15,
+          n_spelers: flight.n_spelers||2,
+          tee_kleur: flight.tee_kleur||'geel',
+          datum: flight.datum
+        });
+      });
+    });
+
+    if(metingen.length < 3){
+      el.innerHTML = '<div class="empty">Onvoldoende bruikbare metingen</div>';
+      return;
+    }
+
+    // Bereken gemiddelde snelheidsfactor
+    const gemFactor = metingen.reduce((s,m)=>s+m.factor,0) / metingen.length;
+
+    // Bereken voorgestelde parameters
+    const voorstelParams = {
+      par3: Math.round(algParams.par3 * gemFactor * 10) / 10,
+      par4: Math.round(algParams.par4 * gemFactor * 10) / 10,
+      par5: Math.round(algParams.par5 * gemFactor * 10) / 10,
+      hcpAdj: algParams.hcpAdj, // nog niet genoeg data voor verfijning
+      flightAdj: algParams.flightAdj,
+      teeRoodAdj: algParams.teeRoodAdj
+    };
+
+    // Weergave
+    pill.textContent = metingen.length + ' metingen';
+    renderParamTabel(voorstelParams);
+
+    // Per-hole analyse
+    const perHole = {};
+    HOLES_DATA.forEach(([h,par])=>{ perHole[h]={par, metingen:[], gem:0}; });
+    metingen.forEach(m=>{
+      if(perHole[m.hole]) perHole[m.hole].metingen.push(m.factor);
+    });
+
+    let html = '<div style="font-size:.78rem;font-weight:600;color:var(--tm);margin-bottom:8px">Snelheidsfactor per hole <span style="font-weight:400;color:var(--tl)">(1.0 = op schema, >1.0 = trager)</span></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
+    HOLES_DATA.forEach(([h,par])=>{
+      const d = perHole[h];
+      if(!d.metingen.length){ 
+        html += `<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem">
+          <span style="font-family:'IBM Plex Mono',monospace;font-weight:600">H${h}</span>
+          <span style="color:var(--tl);margin-left:4px">geen data</span></div>`;
+        return;
+      }
+      const gem = d.metingen.reduce((s,v)=>s+v,0)/d.metingen.length;
+      const kleur = gem > 1.1 ? 'var(--red)' : gem > 1.05 ? 'var(--amber)' : 'var(--gl)';
+      html += `<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem;border-left:2px solid ${kleur}">
+        <span style="font-family:'IBM Plex Mono',monospace;font-weight:600">H${h}</span>
+        <span style="color:var(--tl);margin-left:3px">p${par}</span>
+        <span style="float:right;font-family:'IBM Plex Mono',monospace;color:${kleur}">${gem.toFixed(2)}</span></div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+
+  } catch(e){
+    el.innerHTML = `<div class="empty">Fout bij analyseren: ${e.message}</div>`;
+    toast('Analyse mislukt: '+e.message, true);
+  }
+}
+
+async function toonParamRapport(){
+  const popup = document.createElement('div');
+  popup.className = 'slot-popup';
+  popup.onclick = (e)=>{ if(e.target===popup) popup.remove(); };
+
+  const updates = await sbG('flight_updates',
+    'select=flight_id,hole,tijdstip,flights(datum,gem_hcp,n_spelers,tee_kleur)&order=tijdstip.desc&limit=200'
+  );
+
+  const aantalDagen = new Set((updates||[]).map(u=>u.flights?.datum).filter(Boolean)).size;
+  const aantalMetingen = (updates||[]).length;
+
+  popup.innerHTML = `<div class="slot-popup-box" style="max-height:85vh;overflow-y:auto">
+    <div class="slot-popup-titel">Algoritme rapport</div>
+    <div class="slot-popup-sub">Seizoen 2026 · ${aantalMetingen} metingen · ${aantalDagen} speeldagen</div>
+    <div style="margin:12px 0;padding:10px;background:var(--cr);border-radius:var(--r);font-size:.78rem">
+      <div style="font-weight:600;color:var(--tm);margin-bottom:6px">Huidige parameters</div>
+      <div style="font-family:'IBM Plex Mono',monospace;line-height:2;color:var(--td)">
+        Par 3: ${algParams.par3} min · Par 4: ${algParams.par4} min · Par 5: ${algParams.par5} min<br>
+        Hcp correctie: +${algParams.hcpAdj} min/punt boven hcp 10<br>
+        Flightgrootte: +${algParams.flightAdj} min/extra speler<br>
+        Rode tee: ${algParams.teeRoodAdj} min op par 4/5
+      </div>
+    </div>
+    <div style="margin-bottom:12px;padding:10px;background:var(--gp);border-radius:var(--r);font-size:.78rem;color:var(--gd)">
+      <div style="font-weight:600;margin-bottom:4px">Datakwaliteit</div>
+      ${aantalMetingen < 20 ? '⚠ Nog weinig data — parameters zijn indicatief' : aantalMetingen < 100 ? '📊 Groeiende dataset — eerste patronen zichtbaar' : '✅ Voldoende data voor betrouwbare calibratie'}
+    </div>
+    <div id="rapportHoleData" style="font-size:.75rem;color:var(--tl)">Laden...</div>
+    <button class="btn bg2 bf" style="margin-top:12px" onclick="this.closest('.slot-popup').remove()">Sluiten</button>
+  </div>`;
+  document.body.appendChild(popup);
+
+  // Vul hole data in
+  setTimeout(async ()=>{
+    await laadParamVoorstel();
+    const rapportEl = document.getElementById('rapportHoleData');
+    if(rapportEl) rapportEl.textContent = 'Zie de analyse hierboven voor details per hole.';
+  }, 100);
+}
+
+// Laad params bij admin init
+function initAlgParams(){
+  // Sync pace inputs met algParams
+  if(document.getElementById('popPar3')) document.getElementById('popPar3').value = algParams.par3;
+  if(document.getElementById('popPar4')) document.getElementById('popPar4').value = algParams.par4;
+  if(document.getElementById('popPar5')) document.getElementById('popPar5').value = algParams.par5;
+  renderParamTabel(null);
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+function typeLabel(t){
+  return {slow_play:'Langzaam spel',bunker:'Bunker niet geharkt',pitchmark:'Pitchmark',
+    kleding:'Kledingvoorschrift',buggy:'Buggy overtreding',betaling:'Niet betaald',
+    baan:'Baanschade',logboek:'Logboek',anders:'Anders'}[t]||t;
+}
+function actieLabel(a){
+  return {herinnerd:'Herinnerd',waarschuwing:'Waarschuwing',caddiemaster:'→ Caddiemaster',
+    geescaleerd:'Geëscaleerd',geen:'Alleen genoteerd'}[a]||a||'—';
+}
+const DAGEN=['zo','ma','di','wo','do','vr','za'];
+const MAANDEN=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+function dagNaam(d){ if(!d) return ''; const dt=new Date(d+'T12:00:00'); return DAGEN[dt.getDay()].charAt(0).toUpperCase()+DAGEN[dt.getDay()].slice(1); }
+function datumLang(d){ if(!d) return '—'; const dt=new Date(d.includes('T')?d:d+'T12:00:00'); return dt.getDate()+' '+MAANDEN[dt.getMonth()]+' '+dt.getFullYear(); }
+function datumKort(d){ if(!d) return '—'; const dt=new Date(d); return dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0'); }
+
+
+// Orientation change → herrender diensten
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => { if(alleSlots.length) renderDiensten(); }, 200);
+});
+
+// ── Swipe voor weekgrid ──
+(function(){
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const isLandscape = window.matchMedia('(orientation:landscape) and (max-width:767px)').matches;
+    const isBreedSwipe = window.innerWidth >= 900;
+    const opDiensten = document.getElementById('panelDiensten').classList.contains('active');
+    if((!isLandscape && !isBreedSwipe) || !opDiensten) return;
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50){
+      verschuifWeek(dx < 0 ? 1 : -1);
+    }
+  }, {passive:true});
+})();
+window.addEventListener('resize', () => {
+  if(alleSlots.length) renderDiensten();
+});
+
+// ─── KEEPALIVE ────────────────────────────────────────────
+async function keepalive(){
+  try{ await sbG('marshals','select=id&limit=1'); }catch(_){}
+}
+setInterval(keepalive, 4*60*1000);
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload = async () => {
+  const storedId=localStorage.getItem('marshal_id');
+  const storedNaam=localStorage.getItem('marshal_naam');
+  const storedAdmin=localStorage.getItem('is_admin')==='true';
+  const storedCaddy=localStorage.getItem('is_caddymaster')==='true';
+  await laadMarshalsLogin();
+  if(storedId && storedNaam){
+    huidigeMarshalId=storedId==='admin'||storedId==='caddymaster'?null:storedId;
+    huidigeMarshalNaam=storedNaam;
+    isAdmin=storedAdmin;
+    isCaddymaster=storedCaddy;
+    startApp(storedAdmin, storedCaddy);
+  }
+};
+
+async function toggleBlokSlotPopup(slotId, isGeblokkeerd){
+  document.getElementById('slotPopup')?.remove();
+  try {
+    await sbU('dienst_slots', { geblokkeerd: !isGeblokkeerd, geblokkeerd_reden: isGeblokkeerd ? null : 'Niet nodig' }, 'id=eq.'+slotId);
+    toast(isGeblokkeerd ? 'Slot vrijgegeven' : 'Slot geblokkeerd');
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = slots||[];
+    renderDiensten();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function verwijderUitDienst(slotId){
+  if(!confirm('Marshal uit deze dienst verwijderen?')) return;
+  document.getElementById('slotPopup')?.remove();
+  try {
+    await sbD('dienst_boekingen', 'slot_id=eq.'+slotId);
+    toast('Marshal verwijderd uit dienst');
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = slots||[];
+    renderDiensten();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function voegMarshalAanDienst(slotId, datum, tijd){
+  document.getElementById('slotPopup')?.remove();
+  try {
+    const marshals = await sbG('marshals', 'select=id,naam&actief=eq.true&order=naam.asc');
+    if(!marshals||!marshals.length){ toast('Geen marshals gevonden', true); return; }
+
+    const bestaand = document.getElementById('marshalKiesPopup');
+    if(bestaand) bestaand.remove();
+
+    const popup = document.createElement('div');
+    popup.className = 'slot-popup';
+    popup.id = 'marshalKiesPopup';
+    popup.onclick = (e) => { if(e.target===popup) popup.remove(); };
+
+    const items = marshals.map(m =>
+      '<button onclick="bevestigVoegToe(\''+slotId+'\',\''+m.id+'\')" class="btn bg2 bf" style="text-align:left;margin-bottom:4px">'+m.naam+'</button>'
+    ).join('');
+
+    popup.innerHTML = '<div class="slot-popup-box" style="max-height:70vh;overflow-y:auto">'
+      +'<div class="slot-popup-titel">Marshal kiezen</div>'
+      +'<div class="slot-popup-sub">'+datum+' &middot; '+tijd+'</div>'
+      +'<div style="display:flex;flex-direction:column;margin:12px 0">'+items+'</div>'
+      +'<button class="btn bg2 bf" onclick="document.getElementById(\'marshalKiesPopup\').remove()">Annuleren</button>'
+      +'</div>';
+    document.body.appendChild(popup);
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function bevestigVoegToe(slotId, marshalId){
+  document.getElementById('marshalKiesPopup')?.remove();
+  try {
+    await sbP('dienst_boekingen', { marshal_id: marshalId, slot_id: slotId });
+    toast('Marshal ingepland ✓');
+    const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+    alleSlots = slots||[];
+    renderDiensten();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+
+
+// ─── SLOT BEHEER FUNCTIES ─────────────────────────────────
+
+async function vrijgevenSlotPopup(slotId){
+  document.getElementById('slotPopup')?.remove();
+  try {
+    await sbU('dienst_slots', { geblokkeerd:false, wedstrijddag:false, geblokkeerd_reden:null }, 'id=eq.'+slotId);
+    toast('Slot vrijgegeven');
+    await herlaadSlots();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function blokkeerSlotPopup(slotId){
+  document.getElementById('slotPopup')?.remove();
+  try {
+    await sbU('dienst_slots', { geblokkeerd:true, geblokkeerd_reden:'Niet nodig' }, 'id=eq.'+slotId);
+    toast('Slot geblokkeerd');
+    await herlaadSlots();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+function wedstrijdSlotPopup(slotId){
+  const box = document.getElementById('slotPopup')?.querySelector('.slot-popup-box');
+  if(!box) return;
+  box.innerHTML = '<div class="slot-popup-titel">Wedstrijd inboeken</div>'
+    + '<div class="fg" style="margin:12px 0 8px"><label>Naam wedstrijd</label>'
+    + '<input type="text" id="wedstrijdNaamInput" placeholder="Bijv. Damesdag, Maandbeker..." '
+    + 'onkeydown="if(event.key===\'Enter\')bevestigWedstrijd(\''+slotId+'\')" '
+    + 'style="width:100%;padding:9px 11px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+    + '<button class="btn bp bf" onclick="bevestigWedstrijd(\'' + slotId + '\')">Opslaan</button>'
+    + '<button class="btn bg2 bf" style="margin-top:8px" onclick="document.getElementById(\'slotPopup\').remove()">Annuleren</button>';
+  setTimeout(() => document.getElementById('wedstrijdNaamInput')?.focus(), 50);
+}
+
+async function bevestigWedstrijd(slotId){
+  const naam = document.getElementById('wedstrijdNaamInput')?.value.trim() || 'Wedstrijd';
+  document.getElementById('slotPopup')?.remove();
+  try {
+    await sbU('dienst_slots', { wedstrijddag:true, geblokkeerd:false, geblokkeerd_reden:naam }, 'id=eq.'+slotId);
+    toast(naam + ' ingeboekt');
+    await herlaadSlots();
+  } catch(e){ toast('Fout: '+e.message, true); }
+}
+
+async function herlaadSlots(){
+  // Sla scrollpositie op vóór herrender
+  const grid = document.getElementById('weekGrid');
+  const scrollTop = document.getElementById('seizoenScroll')?.scrollTop || 0;
+  const windowScroll = window.scrollY;
+
+  const slots = await sbGAll('dienst_slots','select=id,datum,start_tijd,eind_tijd,wedstrijddag,geblokkeerd,geblokkeerd_reden,dienst_boekingen(marshal_id,marshals(naam))&order=datum.asc,start_tijd.asc');
+  alleSlots = slots||[];
+  renderDiensten();
+
+  // Herstel scrollpositie na herrender
+  if(window.innerWidth >= 900){
+    // Kleine vertraging zodat de DOM klaar is
+    requestAnimationFrame(() => {
+      const scrollDiv = document.getElementById('seizoenScroll');
+      if(scrollDiv) scrollDiv.scrollTop = scrollTop;
+    });
+  } else {
+    window.scrollTo(0, windowScroll);
+  }
+}
+
+// ─── SEIZOEN AANMAKEN (VOORZITTER) ───────────────────────
+
+function openSeizoenAanmaken(){
+  const bestaand = document.getElementById('seizoenPopup');
+  if(bestaand) bestaand.remove();
+
+  const popup = document.createElement('div');
+  popup.className = 'slot-popup';
+  popup.id = 'seizoenPopup';
+  popup.onclick = (e) => { if(e.target===popup) popup.remove(); };
+
+  const tijdslots = [
+    {start:'10:00',eind:'12:00'},{start:'12:00',eind:'14:00'},
+    {start:'14:00',eind:'16:00'},{start:'16:00',eind:'18:00'},
+    {start:'18:00',eind:'20:00'},{start:'20:00',eind:'21:30'}
+  ];
+  const jaar = new Date().getFullYear();
+
+  popup.innerHTML = '<div class="slot-popup-box" style="max-width:360px;max-height:80vh;overflow-y:auto">'
+    + '<div class="slot-popup-titel">Nieuw seizoen aanmaken</div>'
+    + '<div class="fg" style="margin-bottom:8px"><label>Startdatum</label>'
+    + '<input type="date" id="seizoenStart" value="' + jaar + '-03-01" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+    + '<div class="fg" style="margin-bottom:12px"><label>Einddatum</label>'
+    + '<input type="date" id="seizoenEind" value="' + jaar + '-10-31" style="width:100%;padding:8px 10px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:\'IBM Plex Sans\',sans-serif;font-size:.88rem"></div>'
+    + '<div style="font-size:.78rem;font-weight:600;color:var(--tl);margin-bottom:6px">DAGEN</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">'
+    + ['Ma','Di','Wo','Do','Vr','Za','Zo'].map((d,i) =>
+        '<button id="seizoenDag' + i + '" onclick="this.classList.toggle(\'active\')" class="btn bsm" '
+        + 'style="min-width:38px;background:var(--cr);border:1px solid var(--cd);color:var(--td)">' + d + '</button>'
+      ).join('')
+    + '</div>'
+    + '<div style="font-size:.78rem;font-weight:600;color:var(--tl);margin-bottom:6px">TIJDSLOTS</div>'
+    + '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">'
+    + tijdslots.map((t,i) =>
+        '<label style="display:flex;align-items:center;gap:8px;font-size:.82rem;cursor:pointer">'
+        + '<input type="checkbox" id="seizoenTijd' + i + '" checked style="width:16px;height:16px"> '
+        + t.start + '\u2013' + t.eind + '</label>'
+      ).join('')
+    + '</div>'
+    + '<div id="seizoenVoortgang" style="font-size:.75rem;color:var(--tl);margin-bottom:8px;display:none"></div>'
+    + '<button class="btn bp bf" onclick="maakSeizoenAan()">Seizoen aanmaken</button>'
+    + '<button class="btn bg2 bf" style="margin-top:8px" onclick="document.getElementById(\'seizoenPopup\').remove()">Annuleren</button>'
+    + '</div>';
+
+  document.body.appendChild(popup);
+}
+
+async function maakSeizoenAan(){
+  const start = document.getElementById('seizoenStart').value;
+  const eind = document.getElementById('seizoenEind').value;
+  if(!start || !eind){ toast('Vul start- en einddatum in', true); return; }
+
+  // Dag mapping: index 0=Ma t/m 6=Zo; JS getDay() 0=zo,1=ma,...
+  const dagJsIndex = [1,2,3,4,5,6,0];
+  const geselecteerdeDagen = dagJsIndex.filter((_,i) =>
+    document.getElementById('seizoenDag'+i)?.classList.contains('active')
+  );
+  if(!geselecteerdeDagen.length){ toast('Selecteer minimaal 1 dag', true); return; }
+
+  const tijdslots = [
+    {start:'10:00',eind:'12:00'},{start:'12:00',eind:'14:00'},
+    {start:'14:00',eind:'16:00'},{start:'16:00',eind:'18:00'},
+    {start:'18:00',eind:'20:00'},{start:'20:00',eind:'21:30'}
+  ];
+  const geselecteerdeSlots = tijdslots.filter((_,i) =>
+    document.getElementById('seizoenTijd'+i)?.checked
+  );
+  if(!geselecteerdeSlots.length){ toast('Selecteer minimaal 1 tijdslot', true); return; }
+
+  const voortgang = document.getElementById('seizoenVoortgang');
+  voortgang.style.display = 'block';
+
+  const slots = [];
+  const cur = new Date(start + 'T12:00:00');
+  const eindDt = new Date(eind + 'T12:00:00');
+  while(cur <= eindDt){
+    if(geselecteerdeDagen.includes(cur.getDay())){
+      const datum = cur.toISOString().split('T')[0];
+      geselecteerdeSlots.forEach(t => {
+        slots.push({ datum, start_tijd:t.start+':00', eind_tijd:t.eind+':00', max_marshals:1, wedstrijddag:false, geblokkeerd:false });
+      });
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if(!slots.length){ toast('Geen slots om aan te maken', true); return; }
+  voortgang.textContent = slots.length + ' slots aanmaken...';
+
+  let aangemaakt = 0;
+  for(let i=0; i<slots.length; i+=50){
+    const batch = slots.slice(i, i+50);
+    try {
+      await sbP('dienst_slots', batch);
+      aangemaakt += batch.length;
+    } catch(e){ aangemaakt += batch.length; }
+    voortgang.textContent = aangemaakt + '/' + slots.length + ' aangemaakt...';
+  }
+
+  toast(slots.length + ' slots aangemaakt \u2713');
+  document.getElementById('seizoenPopup')?.remove();
+  await herlaadSlots();
+}
+
+
+// ─── SEIZOEN GRID (DESKTOP) ──────────────────────────────
+
+function renderSeizoenGrid(slots, vandaag){
+  const grid = document.getElementById('weekGrid');
+  if(!grid) return;
+
+  const tijden = ['10:00','12:00','14:00','16:00','18:00','20:00'];
+  const eindMap = {'10:00':'12:00','12:00':'14:00','14:00':'16:00','16:00':'18:00','18:00':'20:00','20:00':'21:30'};
+  const dagKort = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const MAANDEN_KORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Bepaal datumbereik: vroegste en laatste datum in slots, of huidig seizoen
+  let datums = slots.map(s => s.datum).filter(Boolean).sort();
+  let eersteSlot = datums[0] || vandaag;
+  let laatsteSlot = datums[datums.length-1] || vandaag;
+
+  // Begin bij maandag van eerste week, eindig bij zondag van laatste week
+  let startDt = new Date(eersteSlot + 'T12:00:00');
+  startDt.setDate(startDt.getDate() - ((startDt.getDay()+6)%7));
+  let eindDt = new Date(laatsteSlot + 'T12:00:00');
+  eindDt.setDate(eindDt.getDate() + (7 - eindDt.getDay())%7);
+
+  // Bouw lijst van weken
+  const weken = [];
+  let cur = new Date(startDt);
+  while(cur <= eindDt){
+    const week = [];
+    for(let i=0;i<7;i++){
+      week.push(new Date(cur));
+      cur.setDate(cur.getDate()+1);
+    }
+    weken.push(week);
+  }
+
+  let html = '<div id="seizoenScroll" style="overflow-y:auto;max-height:calc(100vh - 120px)">';
+
+  weken.forEach(weekDagen => {
+    const maandag = weekDagen[0];
+    const weekStr = maandag.getDate()+' '+MAANDEN_KORT[maandag.getMonth()];
+    const isHuidigeWeek = weekDagen.some(d => d.toISOString().split('T')[0] === vandaag);
+
+    html += '<div style="margin-bottom:24px">';
+    // Week header
+    html += '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:.65rem;text-transform:uppercase;color:var(--tl);letter-spacing:.06em;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--cd)">'
+      + weekStr + (isHuidigeWeek ? ' <span style="color:var(--gm);font-weight:700">\u2022 Deze week</span>' : '')
+      + '</div>';
+
+    html += '<table class="wg-table"><thead><tr><th class="wg-th" style="width:58px">Tijd</th>';
+    weekDagen.forEach(d => {
+      const ds = d.toISOString().split('T')[0];
+      const isVandaag = ds === vandaag;
+      html += `<th class="wg-th${isVandaag?' vandaag':''}">${dagKort[(d.getDay()+6)%7]}<br><span style="font-size:.75rem;font-weight:${isVandaag?'700':'400'}">${d.getDate()} ${MAANDEN_KORT[d.getMonth()]}</span></th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    tijden.forEach(tijd => {
+      const eind = eindMap[tijd];
+      html += `<tr><td class="wg-tijd">${tijd}</td>`;
+      weekDagen.forEach(d => {
+        const ds = d.toISOString().split('T')[0];
+        const isVerleden = ds < vandaag;
+        const slot = slots.find(s => s.datum===ds && s.start_tijd.slice(0,5)===tijd);
+        const geblokkeerd = slot && (slot.wedstrijddag || slot.geblokkeerd);
+
+        if(isVerleden){
+          if(!slot){ html += '<td class="wg-cel"><div class="wg-cel-inner verleden"></div></td>'; return; }
+          const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+          const naamKort = bezet ? achternaam(slot.dienst_boekingen[0].marshals?.naam||'') : '';
+          html += `<td class="wg-cel"><div class="wg-cel-inner verleden">${naamKort}</div></td>`;
+          return;
+        }
+
+        if(geblokkeerd){
+          if(isAdmin || isCaddymaster){
+            const isWed = slot?.wedstrijddag;
+            const label = isWed ? (slot?.geblokkeerd_reden||'Wedstrijd') : 'Niet nodig';
+            const cls = isWed ? 'wg-wedstrijd' : 'wg-geblokkeerd';
+            html += `<td class="wg-cel"><div class="wg-cel-inner ${cls}" data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}\u2013${eind}" data-bezetter="" onclick="beheerSlotKlik(this)">${label}</div></td>`;
+          } else {
+            const isWed = slot?.wedstrijddag;
+            if(isWed){
+              html += `<td class="wg-cel"><div class="wg-cel-inner wg-wedstrijd">${slot?.geblokkeerd_reden||'Wedstrijd'}</div></td>`;
+            } else {
+              html += '<td class="wg-cel"><div class="wg-cel-inner wg-geblokkeerd"></div></td>';
+            }
+          }
+          return;
+        }
+
+        if(slot){
+          const eigenBoeking = alleBoekingen.has(slot.id);
+          const bezet = slot.dienst_boekingen && slot.dienst_boekingen.length > 0;
+          const bezetter = bezet ? slot.dienst_boekingen[0].marshals?.naam : null;
+          const naamKort = bezetter ? achternaam(bezetter) : '';
+          if(isAdmin || isCaddymaster){
+            const cls = bezet ? 'wg-bezet' : 'wg-beschikbaar';
+            const label = bezet ? naamKort : 'Beschikbaar';
+            html += `<td class="wg-cel"><div class="wg-cel-inner ${cls}" data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}\u2013${eind}" data-bezetter="${bezetter||''}" onclick="beheerSlotKlik(this)">${label}</div></td>`;
+          } else if(eigenBoeking){
+            html += `<td class="wg-cel"><div class="wg-cel-inner eigen" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}\u2013${eind}',${JSON.stringify(bezetter||'')},true,false)">Jij \u2713</div></td>`;
+          } else if(bezet){
+            html += `<td class="wg-cel"><div class="wg-cel-inner bezet" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}\u2013${eind}',${JSON.stringify(bezetter||'')},false,false)">${naamKort}</div></td>`;
+          } else {
+            html += `<td class="wg-cel"><div class="wg-cel-inner wg-boekbaar" data-slotid="${slot.id}" data-datum="${ds}" data-tijd="${tijd}\u2013${eind}" onclick="openSlotDetail('${slot.id}','${ds}','${tijd}\u2013${eind}','',false,false)">Boek</div></td>`;
+          }
+          return;
+        }
+
+        // Slot bestaat niet in DB — overgeslagen
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+
+  html += '</div>';
+  grid.innerHTML = html;
+
+  // Scroll naar huidige week alleen bij eerste load, niet na elke update
+  if(!grid._geScrolld){
+    grid._geScrolld = true;
+    setTimeout(() => {
+      const vandaagEl = grid.querySelector('.vandaag');
+      if(vandaagEl) vandaagEl.closest('div[style*="margin-bottom:24px"]')?.scrollIntoView({behavior:'instant', block:'start'});
+    }, 50);
+  }
+}
+
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@
   ║  Vandelinde Consulting BV.                              ║
   ║                                                              ║
   ║  Ontwikkeld voor de Goyer Golf & Country Club te Eemnes.    ║
-  ║  Versie: 1.6.4                                               ║
+  ║  Versie: 1.6.5                                               ║
   ╚══════════════════════════════════════════════════════════════╝
 -->
 <html lang="nl">
@@ -400,7 +400,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
     <!-- HOME -->
     <div class="panel active" id="panelHome">
-      <div class="sh"><div class="ss" id="homeVersie">v1.6.4</div></div>
+      <div class="sh"><div class="ss" id="homeVersie">v1.6.5</div></div>
 
       <!-- Noodknoppen compact -->
       <div class="nood-row" id="noodRow" style="margin-bottom:10px">
@@ -946,7 +946,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.6.4';
+const APP_VERSIE = '1.6.5';
 const SBU = 'https://tjmnzxjgfdstfqonghvs.supabase.co';
 const SBK = 'sb_publishable_GEaiWLLG5asArBHG177YJg_t9G0t6wd';
 const ADMIN_AUTH_URL = SBU + '/functions/v1/admin-auth';
@@ -1526,7 +1526,7 @@ function startApp(admin, caddy=false){
   const ntRegl = document.getElementById('ntReglement');
   if(ntRegl) ntRegl.classList.remove('hidden');
   // Bewerk kaart: alleen voor caddymaster en voorzitter
-  const reglBewerk = document.getElementById('reglementBewerkBtn');
+  const reglBewerk = document.getElementById('reglementBewerkKaart');
   if(reglBewerk) reglBewerk.classList.toggle('hidden', !caddy && !admin);
   // Logboek kaart verbergen voor voorzitter
   const logboekCard = document.getElementById('logboekCard');

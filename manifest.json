@@ -1,0 +1,16 @@
+{
+  "name": "Goyer Marshal App",
+  "short_name": "Marshal App",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a5c35",
+  "theme_color": "#1a5c35",
+  "icons": [
+    {
+      "src": "MarshalAppLogo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

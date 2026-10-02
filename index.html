@@ -14,7 +14,7 @@
   ║  Vandelinde Consulting BV.                              ║
   ║                                                              ║
   ║  Ontwikkeld voor de Goyer Golf & Country Club te Eemnes.    ║
-  ║  Versie: 1.10.04                                               ║
+  ║  Versie: 1.10.05                                               ║
   ╚══════════════════════════════════════════════════════════════╝
 -->
 <html lang="nl">
@@ -1073,7 +1073,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.10.04';
+const APP_VERSIE = '1.10.05';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -5875,6 +5875,13 @@ setInterval(keepalive, 4*60*1000);
 
 // ─── INIT ─────────────────────────────────────────────────
 window.onload = async () => {
+  // Service worker registreren — uitsluitend voor PWA-installeerbaarheid
+  // (Android/Chrome vereist dit naast het manifest). Geen offline-caching:
+  // sw.js stuurt elk verzoek gewoon door naar het netwerk.
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker registratie mislukt:', err));
+  }
+
   // Versie in home Over-link
   const hovEl = document.getElementById('homeOverVersie');
   if(hovEl) hovEl.textContent = APP_VERSIE;

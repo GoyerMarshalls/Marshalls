@@ -14,7 +14,7 @@
   ║  Vandelinde Consulting BV.                              ║
   ║                                                              ║
   ║  Ontwikkeld voor de Goyer Golf & Country Club te Eemnes.    ║
-  ║  Versie: 1.10.05                                               ║
+  ║  Versie: 1.10.06                                               ║
   ╚══════════════════════════════════════════════════════════════╝
 -->
 <html lang="nl">
@@ -346,20 +346,21 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
       <div class="login-title" id="loginTitle">Inloggen</div>
 
       <!-- Naam + PIN -->
-      <div id="wrapNaam">
+      <form id="wrapNaam" autocomplete="on" onsubmit="event.preventDefault(); controleerPin(); return false;">
         <div class="fg" style="margin-bottom:10px">
           <label>Uw naam</label>
-          <select id="loginSelect" onchange="selectNaam(this)"><option value="">Selecteer...</option></select>
+          <select id="loginSelect" onchange="selectNaam(this)" autocomplete="username"><option value="">Selecteer...</option></select>
         </div>
         <div style="margin:10px 0 2px">
           <label style="font-size:.62rem;font-weight:600;color:var(--tm);letter-spacing:.05em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Pincode</label>
-          <input type="password" id="pinNativeInput" inputmode="numeric" maxlength="4" autocomplete="off"
+          <input type="password" id="pinNativeInput" inputmode="numeric" maxlength="4" autocomplete="current-password"
             placeholder="••••"
             style="width:100%;margin-top:5px;padding:14px;text-align:center;letter-spacing:.5em;font-size:1.5rem;border:1.5px solid var(--cd);border-radius:var(--r);background:var(--cr);color:var(--td);font-family:'IBM Plex Mono',monospace;-webkit-appearance:none;box-sizing:border-box"
-            oninput="if(this.value.length===4)controleerPin()"
-            onkeydown="if(event.key==='Enter')controleerPin()">
+            oninput="if(this.value.length===4)controleerPin()">
         </div>
         <div id="pinErr" style="text-align:center;font-size:.78rem;color:var(--red);min-height:16px;margin:6px 0 4px"></div>
+        <!-- Verborgen submit-knop: zorgt dat Enter/autofill-submit altijd via het formulier verloopt, ook als autofill geen 'input'-event afvuurt (zie autofill-fix-instructies) -->
+        <button type="submit" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none" tabindex="-1" aria-hidden="true">Inloggen</button>
         <div class="admin-lnk" style="margin-top:14px;display:flex;justify-content:center;gap:20px">
           <a href="#" onclick="toonAdminLogin('voorzitter');return false;">Commissievoorzitter</a>
           <a href="#" onclick="toonAdminLogin('caddymaster');return false;">Caddymaster</a>
@@ -371,19 +372,19 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
           <div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--tl);letter-spacing:.04em">© 2026 Vandelinde Consulting BV</div>
           <div id="loginVersie" style="font-family:'IBM Plex Mono',monospace;font-size:.54rem;color:var(--tl);opacity:.6;letter-spacing:.03em;margin-top:2px"></div>
         </div>
-      </div>
+      </form>
 
       <!-- Voorzitter / caddymaster -->
-      <div id="wrapAdmin" class="hidden">
+      <form id="wrapAdmin" class="hidden" onsubmit="event.preventDefault(); doAdminLogin(); return false;">
         <div class="login-title" id="adminLoginTitle" style="margin-bottom:14px;text-align:center">Voorzitter</div>
         <div class="fg">
           <label>Wachtwoord</label>
-          <input type="password" id="adminPwdInput" placeholder="Wachtwoord" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+          <input type="password" id="adminPwdInput" placeholder="Wachtwoord" autocomplete="current-password">
         </div>
-        <button class="btn bp bf" onclick="doAdminLogin()">Inloggen</button>
+        <button type="submit" class="btn bp bf">Inloggen</button>
         <div id="adminErr" style="text-align:center;font-size:.78rem;color:var(--red);margin-top:8px;min-height:18px"></div>
-        <button class="btn bg2 bf" style="margin-top:8px" onclick="terug()">← Terug</button>
-      </div>
+        <button type="button" class="btn bg2 bf" style="margin-top:8px" onclick="terug()">← Terug</button>
+      </form>
     </div>
   </div>
 </div>
@@ -1073,7 +1074,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.10.05';
+const APP_VERSIE = '1.10.06';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {

@@ -1065,7 +1065,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.11.00';
+const APP_VERSIE = '1.11.02';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -4407,9 +4407,27 @@ function renderTracker(){
     return (rt === '9holes_achter' || rt === '18holes_vanaf10') ? 10 : 1;
   }
 
-  // Combineer en sorteer: actieve flights op verwachte hole, aankomende op starthole
+  // Sorteersleutel voor actieve/afgeronde flight: de fysieke hole (uit `volgorde`, dus 1-18).
+  // verwachteHoleNu(f) geeft bij een lopende flight al de juiste fysieke hole terug, maar bij een
+  // afgeronde flight (geen laatste_hole-melding) geeft die een generieke 99 ("klaar") — dat zette
+  // álle afgeronde flights, van elke rondelengte, op één hoop en liet de sortering binnen die hoop
+  // terugvallen op kale starttijd. Gelijkgetrokken met GoyerFlow's trackerSortHole (30 oktober 2026,
+  // Kay's verzoek): een afgeronde flight sorteert voortaan op zijn eigen laatste fysieke hole (9 bij
+  // een voor-9-ronde, 18 bij 18 holes of een achter-9-ronde), dus flights groeperen weer per
+  // werkelijke hole i.p.v. alleen op tijd. Zelfde fysieke-eindhole-conventie als `holeWeergave` in
+  // renderFlightItem hieronder.
+  function actiefSortHole(f){
+    const vw = verwachteHoleNu(f);
+    if(!vw || vw >= 99){
+      const volgorde = getHoleVolgorde(f.ronde_type||'18holes');
+      return volgorde[volgorde.length-1];
+    }
+    return vw;
+  }
+
+  // Combineer en sorteer: actieve/afgeronde flights op (fysieke) hole, aankomende op starthole
   const alleItems = [
-    ...actief.map(f => ({f, sortHole: verwachteHoleNu(f) || 999, aankomend: false})),
+    ...actief.map(f => ({f, sortHole: actiefSortHole(f), aankomend: false})),
     ...aankomend.map(f => ({f, sortHole: aankomendSortHole(f), aankomend: true}))
   ];
 
@@ -4513,9 +4531,9 @@ function renderFlightItem(f, klikbaar){
   // ── Subtekst onder namen ──────────────────────────────────
   let statusTekst;
   if(isKlaar){
-    statusTekst = '<span style="color:#aaa">klaar</span>';
+    statusTekst = '<span style="color:#aaa">ronde voltooid</span>';
   } else if(!heeftMeting){
-    statusTekst = '<span style="color:var(--tl)">geen data · ~hole '+cirkelGetal+'</span>';
+    statusTekst = '<span style="color:var(--tl)">nog geen melding</span>';
   } else if(voor >= 2){
     statusTekst = '<span style="color:var(--blue);font-weight:600">'+voor+' hole voor</span>';
   } else if(achter >= 3){
@@ -4533,9 +4551,14 @@ function renderFlightItem(f, klikbaar){
   const barKleur = st==='red'?'var(--red)':st==='amber'?'#d4a057':st==='green'?'var(--gl)':st==='blue'?'var(--blue)':'var(--cd)';
   const onclick = klikbaar ? `onclick="openHolePopup('${f.id}')"` : '';
   const toernooiBg = f.toernooi_naam ? 'background:#f4f4f4;' : '';
-  const startHole = (rt === '9holes_achter' || rt === '18holes_vanaf10') ? 'H10' : 'H1';
   const aantalHoles = rt === '18holes' || rt === '18holes_vanaf10' ? '18' : rt === 'south' ? '6' : '9';
-  const rondeLabel = `${startHole}/${aantalHoles}`;
+  // Hole-weergave in de metaregel: de fysieke hole (uit `volgorde`, dus 1-18) waar de flight nu
+  // naar verwachting is — bij "klaar" de laatste fysieke hole van de ronde (bv. 18 bij een
+  // achter-9 ronde), niet het aantal holes zelf. Zelfde conventie als GoyerFlow's
+  // `Hole ${fysiekeHole}/${holesInRonde}` (vulAdminTrackerTab) — bewust ook hier: bij een
+  // achter-9 ronde (9holes_achter) geeft dit bv. "Hole 18/9" (fysieke hole 18, 9 holes totaal in
+  // déze ronde), geen inconsistentie maar dezelfde weergave als GoyerFlow al hanteert.
+  const holeWeergave = isKlaar ? volgorde[volgorde.length-1] : (vw && vw < 99 ? vw : (f.laatste_hole || volgorde[0]));
 
   return `<div class="flight-item fl-${st}" ${onclick} style="align-items:center;${toernooiBg}">
     <div class="hole-cirkel ${cirkelKls}">${cirkelGetal}</div>
@@ -4544,10 +4567,7 @@ function renderFlightItem(f, klikbaar){
         <div class="fi-naam" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">${namenHtml}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:3px">
-        <div class="fi-meta">🕐 ${f.starttijd?.slice(0,5)||'—'}</div>
-        <div class="fi-meta" style="color:var(--blue);font-weight:600">${rondeLabel}</div>
-        <div class="fi-meta" style="color:var(--tl)">--</div>
-        <div class="fi-meta">${statusTekst}</div>
+        <div class="fi-meta">🕐 ${f.starttijd?.slice(0,5)||'—'} · Hole ${holeWeergave}/${aantalHoles} · ${statusTekst}</div>
         ${toernooi}
       </div>
       <div class="fi-bar">

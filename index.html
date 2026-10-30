@@ -766,17 +766,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
         <!-- Pre-game analyse -->
         <div id="trackerPreGame"></div>
 
-        <!-- Pace of play instellingen -->
-        <div class="card" id="paceCard" style="margin-bottom:10px">
-          <div class="ch"><div class="ct">Pace of play</div></div>
-          <div class="cb" style="padding:10px">
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              <div class="fg"><label>Par 3 (min)</label><input type="number" id="popPar3" value="11" min="8" max="20"></div>
-              <div class="fg"><label>Par 4 (min)</label><input type="number" id="popPar4" value="13" min="10" max="25"></div>
-              <div class="fg"><label>Par 5 (min)</label><input type="number" id="popPar5" value="16" min="12" max="28"></div>
-            </div>
-          </div>
-        </div>
+        <!-- Pace of play instellingen verplaatst naar de Analyse-tab (Streeftijden, v30okt2026) —
+             #paceCard is vervallen, de live engine las dit paneel voorheen als enige echte bron
+             van de par3/4/5-waarden; zie claude/bouwgeschiedenis-marshal-app.md. -->
         <!-- Waarschuwingen real-time -->
         <div id="dashWaarschuwingen"></div>
         <!-- Alle flights -->
@@ -812,21 +804,20 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
     </div>
 
-    <!-- ANALYSE (alleen voorzitter) -->
+    <!-- STREEFTIJDEN (alleen voorzitter) — 30 okt 2026: vervangt het oude "Algoritme
+         parameters"-scherm, gelijkgetrokken met GoyerFlow's Parameters-tab. Zie
+         claude/bouwgeschiedenis-marshal-app.md. -->
     <div class="panel hidden" id="panelAnalyse">
       <div class="sh"><div class="st">Analyse</div><div class="ss">Voorzitter</div></div>
       <div class="card" style="margin-bottom:10px">
-        <div class="ch"><div class="ct">Algoritme parameters</div><span class="pill pgr" id="paramStatusPillA">Actueel</span></div>
+        <div class="ch"><div class="ct">Streeftijden</div><span class="pill pgr" id="paramStatusPillA">Actueel</span></div>
         <div class="cb" style="padding:10px">
-          <div id="paramTabelA" style="margin-bottom:12px"></div>
-          <!-- Verwachte rondetijden — altijd zichtbaar -->
-          <div id="rondetijdenA" style="margin-bottom:12px"></div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-            <button class="btn bp bsm" onclick="laadParamVoorstelA()">📊 Analyseer data</button><span class="pill pgr" id="analyseDataPillA" style="align-self:center"></span>
-            <button class="btn bg2 bsm" onclick="toonParamInvoer()">✏️ Handmatig aanpassen</button>
-          </div>
-          <div id="sluitAnalyseWrap" class="hidden" style="margin-top:8px"><button class="btn bg2 bsm bf" onclick="renderParamTabelA(null);document.getElementById('analysePanelA').innerHTML='';document.getElementById('sluitAnalyseWrap').classList.add('hidden')">✕ Sluit analyse</button></div>
-          <div id="analysePanelA" style="margin-top:10px"></div>
+          <div style="font-size:.8rem;color:var(--tl);margin-bottom:10px">Minimale en maximale rondetijd per flightgrootte, voor 9 holes — 18 holes is het dubbele. Gelijk aan het model in GoyerFlow.</div>
+          <div id="streeftijdenVelden" style="margin-bottom:14px"></div>
+          <div id="rondetijdenA9" style="margin-bottom:12px"></div>
+          <div id="rondetijdenA18" style="margin-bottom:12px"></div>
+          <div id="paramFoutA" style="margin-bottom:8px"></div>
+          <button class="btn bp bsm" id="streeftijdenOpslaanBtn" onclick="slaStreeftijdenOp()" disabled>💾 Opslaan</button>
         </div>
       </div>
 
@@ -1074,7 +1065,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.10.06';
+const APP_VERSIE = '1.11.00';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -3827,7 +3818,7 @@ async function wijzigPin(){
 
 // ─── ADMIN ────────────────────────────────────────────────
 async function laadAdmin(){
-  initAlgParams();
+  laadIncidentEmails();
   // Caddymaster mag voorzitter wachtwoord niet zien/wijzigen
   const voorzitterBlok = document.getElementById('wwVoorzitterBlok');
   if(voorzitterBlok) voorzitterBlok.style.display = isAdmin ? '' : 'none';
@@ -4199,30 +4190,26 @@ let dismissedKnelpunten = new Set(); // weggeklikte knelpunten (key = voor.id+ac
 let trackerZoekFilter = '';
 let analyseUitgeklapt = false; // Startlijst analyse ingeklapt by default
 
-function getPaceSettings(){
-  return {
-    3: parseInt(document.getElementById('popPar3')?.value||11),
-    4: parseInt(document.getElementById('popPar4')?.value||13),
-    5: parseInt(document.getElementById('popPar5')?.value||16)
-  };
+// v30okt2026: vervangt het oude per-holetype-formulemodel (par3/4/5 + hcp-/tee-kleur-correctie,
+// gelezen uit het losse #paceCard-paneel) door hetzelfde vlakke min/max-per-flightgrootte-model
+// als GoyerFlow (zie goyerflow/index.html, rondetijdBereikVoor). Geen handicap- of tee-kleur-
+// factor meer — bewust, op Kay's verzoek om beide apps dezelfde berekening te laten gebruiken.
+// #paceCard/getPaceSettings zijn hiermee vervallen (zie ook de HTML-verwijdering elders).
+function rondetijdBereikVoor(nSpelers, holesInRonde){
+  const n = nSpelers <= 2 ? 2 : nSpelers === 3 ? 3 : 4;
+  const min9 = algParams['bal'+n+'_min_minuten_9h'];
+  const max9 = algParams['bal'+n+'_max_minuten_9h'];
+  const factor = (holesInRonde||18) / 9; // 1 voor 9 holes, 2 voor 18 holes
+  return { min: min9*factor, max: max9*factor };
 }
 
-function cumTijden(gem_hcp, tee_kleur){
-  const pace = getPaceSettings();
-  const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
-  const adj = Math.max(0, (gem_hcp - 10) * hcpFactor);
-  // Tee correcties op par 4/5
-  const teeAdj = tee_kleur === 'wit' ? (algParams.teeWitAdj||1.0)
-    : tee_kleur === 'blauw' ? (algParams.teeBlauwAdj||-0.5)
-    : tee_kleur === 'rood' ? (algParams.teeRoodAdj||-1.5)
-    : tee_kleur === 'gemengd' ? (algParams.teeGemengdAdj||-0.75)
-    : 0; // geel = referentie
-  const t = [0];
-  HOLES_DATA.forEach(([,par]) => {
-    const holeTijd = pace[par] + adj + (par >= 4 ? teeAdj : 0);
-    t.push(t[t.length-1] + Math.max(8, holeTijd));
-  });
-  return t;
+// cumTijden(volgorde, n_spelers) — voorheen een losse, altijd-18-holes-aannemende implementatie
+// met een eigen hcp-/tee-correctie en een na-de-feiten toegepaste flightgrootte-correctie. Met
+// het vlakke model is er geen verschil meer met cumTijdenVolgorde hieronder, dus dit is nu
+// simpelweg een doorverwijzing — de aanroepers (holeOpTijdstip/tijdgatOpTijdstip, de
+// knelpunten-detectie) bepalen zelf al hun eigen hole-volgorde.
+function cumTijden(volgorde, n_spelers){
+  return cumTijdenVolgorde(volgorde, null, null, n_spelers);
 }
 
 function tijdNaarMinuten(t){
@@ -4246,16 +4233,17 @@ function getHoleVolgorde(rt){
   return [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]; // 18holes
 }
 
-// Bouw cumulatieve tijden voor een hole-volgorde
+// Bouw cumulatieve tijden voor een hole-volgorde — vlak verdeeld (geen par-weging meer, zie
+// rondetijdBereikVoor hierboven): elke hole in de ronde krijgt exact hetzelfde aantal minuten,
+// de bovengrens van het ingestelde bereik gedeeld door het aantal holes. gem_hcp/tee_kleur staan
+// nog in de signatuur (bestaande call-sites geven ze nog door) maar worden hier bewust niet meer
+// gebruikt.
 function cumTijdenVolgorde(volgorde, gem_hcp, tee_kleur, n_spelers){
-  const pace = getPaceSettings();
-  const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
-  const adj = Math.max(0, ((gem_hcp||15) - 10) * hcpFactor);
-  const nAdj = Math.max(0, ((n_spelers||2) - 2)) * 8 / 18;
+  const bereik = rondetijdBereikVoor(n_spelers||2, volgorde.length);
+  const minPerHole = bereik.max / volgorde.length;
   const cum = [0];
   volgorde.forEach((hole, i) => {
-    const [,par] = HOLES_DATA[hole-1]||[0,4];
-    cum.push(cum[i] + Math.max(8, pace[par] + adj + nAdj));
+    cum.push(cum[i] + minPerHole);
   });
   return cum;
 }
@@ -4279,26 +4267,20 @@ function verwachteHoleNu(f){
   const volgorde = getHoleVolgorde(f.ronde_type||'18holes');
   const cum = cumTijdenVolgorde(volgorde, f.gem_hcp, f.tee_kleur, f.n_spelers);
 
-  // Als er een gemeten positie is, extrapoleer vanaf gemelde hole
+  // Als er een gemeten positie is, extrapoleer vanaf gemelde hole — met de vlakke
+  // minuten-per-hole uit cum (sinds v30okt2026 is elke stap daarin al even groot).
   if(f.laatste_hole && f.laatste_update){
     const gemeldMin = tijdNaarMinuten(f.laatste_update);
     const sindsGemeld = nuMin - gemeldMin;
     if(sindsGemeld >= 0){
-      const pace = getPaceSettings();
-      const hcpFactor = (typeof algParams !== 'undefined' ? algParams.hcpAdj : 0.05);
-      const adj = Math.max(0, ((f.gem_hcp||15)-10)*hcpFactor);
-      const nAdj = Math.max(0, ((f.n_spelers||2)-2))*8/18;
+      const minPerHole = cum[1] - cum[0];
       // Vind startpositie in volgorde
       const startPos = volgorde.indexOf(f.laatste_hole);
       if(startPos !== -1){
-        let resterend = sindsGemeld;
-        for(let i=startPos; i<volgorde.length; i++){
-          const [,par] = HOLES_DATA[volgorde[i]-1]||[0,4];
-          const holeTijd = Math.max(8, pace[par] + adj + nAdj);
-          if(resterend < holeTijd) return volgorde[i];
-          resterend -= holeTijd;
-        }
-        return 99; // klaar
+        const stappenVerder = minPerHole > 0 ? Math.floor(sindsGemeld / minPerHole) : 0;
+        const nieuwePos = startPos + stappenVerder;
+        if(nieuwePos >= volgorde.length) return 99; // klaar
+        return volgorde[nieuwePos];
       }
     }
   }
@@ -4611,18 +4593,21 @@ function verwachteRondetijd(f){
 }
 
 function holeOpTijdstip(f, tijdMin){
-  // Geeft de verwachte hole voor een flight op een gegeven tijdstip (in minuten vanaf middernacht)
+  // Geeft de voortgangsindex (1-gebaseerd, bínnen déze ronde — zelfde betekenis als voorheen,
+  // gebruikt als vergelijkbare index tussen twee flights in tijdgatOpTijdstip) voor een flight op
+  // een gegeven tijdstip. Sinds v30okt2026 rondetype-bewust en dus correct begrensd op het eigen
+  // aantal holes (voorheen een vaste 18-holes-aanname, ook voor een 9-holes-flight) — gebruikt
+  // dezelfde vlakke cumTijden als de rest van de engine, dus geen aparte
+  // flightgrootte-naverrekening meer nodig.
   const startMin = tijdNaarMinuten(f.starttijd);
   const elapsed = tijdMin - startMin;
   if(elapsed < 0) return null;
-  const ct = cumTijden(f.gem_hcp||15, f.tee_kleur);
-  // Correctie voor n_spelers
-  const nAdj = Math.max(0, ((f.n_spelers||2) - 2)) * 8 / 18;
-  const ctAdj = ct.map((v,i) => v + nAdj * i);
-  for(let i=0;i<18;i++){
-    if(elapsed >= ctAdj[i] && elapsed < ctAdj[i+1]) return i+1;
+  const volgorde = getHoleVolgorde(f.ronde_type||'18holes');
+  const ct = cumTijden(volgorde, f.n_spelers);
+  for(let i=0;i<volgorde.length;i++){
+    if(elapsed >= ct[i] && elapsed < ct[i+1]) return i+1;
   }
-  if(elapsed >= ctAdj[18]) return 19;
+  if(elapsed >= ct[volgorde.length]) return volgorde.length+1;
   return 1;
 }
 
@@ -4637,21 +4622,22 @@ function tijdgatOpTijdstip(voor, achter, tijdMin){
   const elapsedAchter = tijdMin - startAchterMin;
   if(elapsedAchter < 0) return null;
 
-  const ctVoor = cumTijden(voor.gem_hcp||15, voor.tee_kleur);
-  const ctAchter = cumTijden(achter.gem_hcp||15, achter.tee_kleur);
-  const nAdjVoor = Math.max(0, ((voor.n_spelers||2) - 2)) * 8 / 18;
-  const nAdjAchter = Math.max(0, ((achter.n_spelers||2) - 2)) * 8 / 18;
+  // Beide flights hebben hier al hetzelfde ronde_type (berekenPreGameKnelpunten filtert dat
+  // vooraf) — dus één gedeelde hole-volgorde voor de index.
+  const volgorde = getHoleVolgorde(achter.ronde_type||'18holes');
+  const ctVoor = cumTijden(volgorde, voor.n_spelers);
+  const ctAchter = cumTijden(volgorde, achter.n_spelers);
 
   // Hole-index achterste flight op dit tijdstip
   const holeAchter = holeOpTijdstip(achter, tijdMin);
-  if(!holeAchter || holeAchter >= 19) return null;
+  if(!holeAchter || holeAchter > volgorde.length) return null;
   const hIdx = Math.max(0, holeAchter - 1);
 
   // Hoeveel tijd heeft de achterste flight gespendeerd tot aan deze hole?
-  const tijdAchterOpHole = ctAchter[hIdx] + nAdjAchter * hIdx;
+  const tijdAchterOpHole = ctAchter[hIdx];
 
   // Hoeveel tijd zou de voorste flight nodig hebben voor dezelfde hole?
-  const tijdVoorOpZelfdeHole = ctVoor[hIdx] + nAdjVoor * hIdx;
+  const tijdVoorOpZelfdeHole = ctVoor[hIdx];
 
   // Tijdsgat = startinterval + (hoeveel de voorste trager is dan de achterste op deze hole)
   // Positief = voorste loopt nog voor; negatief = achterste heeft ingehaald
@@ -5460,236 +5446,14 @@ async function verwerkCSVUpload(input){
 // ─── ALGORITME ANALYSE & PARAMETERS ──────────────────────
 
 // Huidige parameters (worden geladen/opgeslagen in Supabase indien beschikbaar)
+// Model gelijkgetrokken met GoyerFlow (30 okt 2026): direct ingesteld min/max per
+// flightgrootte, 9-holes-basis (18 holes = ×2). Geen hcp-/tee-kleur-factor meer —
+// zie claude/bouwgeschiedenis-marshal-app.md voor de achtergrond.
 let algParams = {
-  par3: 9.5, par4: 11.1, par5: 13.6,
-  hcpAdj: 0.05,        // min extra per hcp punt boven 10
-  flightAdj: 0.833,    // min extra per speler boven 2, per hole — gebaseerd op clubnorm
-  teeWitAdj: 1.0,      // min extra op par4/5 voor witte tee
-  teeGeelAdj: 0,       // geel is referentie
-  teeBlauwAdj: -0.5,   // min korting op par4/5 voor blauwe tee
-  teeRoodAdj: -1.5,    // min korting op par4/5 voor rode tee
-  teeGemengdAdj: -0.75
+  bal2_min_minuten_9h: 95,  bal2_max_minuten_9h: 115,
+  bal3_min_minuten_9h: 100, bal3_max_minuten_9h: 120,
+  bal4_min_minuten_9h: 105, bal4_max_minuten_9h: 125
 };
-
-function renderParamTabel(voorstel){
-  const el = document.getElementById('paramTabel');
-  if(!el) return;
-  const params = [
-    {key:'par3', label:'Par 3', eenheid:'min'},
-    {key:'par4', label:'Par 4', eenheid:'min'},
-    {key:'par5', label:'Par 5', eenheid:'min'},
-    {key:'hcpAdj', label:'Hcp correctie (per punt boven 10)', eenheid:'min'},
-    {key:'flightAdj', label:'Flightgrootte (per extra speler boven 2)', eenheid:'min'},
-    {key:'teeWitAdj', label:'Witte tee correctie (par 4/5)', eenheid:'min'},
-    {key:'teeGeelAdj', label:'Gele tee correctie (par 4/5)', eenheid:'min'},
-    {key:'teeBlauwAdj', label:'Blauwe tee correctie (par 4/5)', eenheid:'min'},
-    {key:'teeRoodAdj', label:'Rode tee correctie (par 4/5)', eenheid:'min'},
-  ];
-
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
-  html += '<tr style="border-bottom:1.5px solid var(--cd)"><th style="text-align:left;padding:5px 4px;color:var(--tl)">Parameter</th><th style="padding:5px 4px;color:var(--tl)">Huidig</th>';
-  if(voorstel) html += '<th style="padding:5px 4px;color:var(--gd)">Voorstel</th><th style="padding:5px 4px"></th>';
-  html += '</tr>';
-
-  params.forEach(p=>{
-    const huidig = algParams[p.key];
-    const vw = voorstel?.[p.key];
-    const verschil = vw !== undefined ? vw - huidig : null;
-    const kleur = verschil > 0 ? 'var(--amber)' : verschil < 0 ? 'var(--gm)' : 'var(--tl)';
-    html += `<tr style="border-bottom:1px solid var(--cd)">
-      <td style="padding:6px 4px;color:var(--tm)">${p.label}</td>
-      <td style="padding:6px 4px;text-align:center;font-family:'IBM Plex Mono',monospace">${huidig} ${p.eenheid}</td>`;
-    if(voorstel){
-      html += `<td style="padding:6px 4px;text-align:center;font-family:'IBM Plex Mono',monospace;color:${kleur}">${vw !== undefined ? vw+' '+p.eenheid : '—'}</td>
-      <td style="padding:6px 4px;text-align:center">`;
-      if(vw !== undefined && vw !== huidig){
-        html += `<button onclick="pasParamAan('${p.key}',${vw})" style="font-size:.65rem;padding:3px 8px;background:var(--gm);color:#fff;border:none;border-radius:4px;cursor:pointer">Overnemen</button>`;
-      } else if(vw !== undefined){
-        html += `<span style="color:var(--gl);font-size:.75rem">✓</span>`;
-      }
-      html += '</td>';
-    }
-    html += '</tr>';
-  });
-  html += '</table>';
-  el.innerHTML = html;
-}
-
-window.pasParamAan = async function pasParamAan(key, waarde){
-  algParams[key] = waarde;
-  // Sync naar pace inputs indien zichtbaar
-  if(key==='par3' && document.getElementById('popPar3')) document.getElementById('popPar3').value = waarde;
-  if(key==='par4' && document.getElementById('popPar4')) document.getElementById('popPar4').value = waarde;
-  if(key==='par5' && document.getElementById('popPar5')) document.getElementById('popPar5').value = waarde;
-  // UI direct bijwerken — ongeacht of Supabase lukt
-  const pill = document.getElementById('paramStatusPill');
-  if(pill){ renderParamTabel(null); pill.textContent = 'Bijgewerkt ✓'; pill.style.background = 'var(--gp)'; }
-  const pillA = document.getElementById('paramStatusPillA');
-  if(pillA){ renderParamTabelA(null); pillA.textContent = 'Bijgewerkt ✓'; pillA.style.background = 'var(--gp)'; }
-  const apA = document.getElementById('analysePanelA');
-  if(apA) apA.innerHTML = '';
-  toast('Parameter opgeslagen ✓');
-  // Opslaan in Supabase (op de achtergrond)
-  slaAlgParamsOp().catch(function(e){ console.error('AlgParams opslaan mislukt:', e); });
-}
-
-async function laadParamVoorstel(){
-  const el = document.getElementById('analysePanel');
-  const pill = document.getElementById('analyseDataPill');
-  el.innerHTML = '<div class="loading">Data analyseren...</div>';
-
-  try {
-    // Haal alle flight_updates op met bijbehorende flight data
-    const updates = await sbG('flight_updates',
-      'select=flight_id,hole,tijdstip,flights(starttijd,gem_hcp,n_spelers,tee_kleur,ronde_type,datum)&order=tijdstip.asc'
-    );
-
-    if(!updates || updates.length < 5){
-      el.innerHTML = '<div class="empty">Onvoldoende data — minimaal 5 metingen nodig voor analyse</div>';
-      pill.textContent = updates?.length || 0;
-      return;
-    }
-
-    // Bereken werkelijke hole-tijden per meting
-    const metingen = [];
-    // Groepeer per flight
-    const perFlight = {};
-    updates.forEach(u=>{
-      if(!u.flights) return;
-      const fid = u.flight_id;
-      if(!perFlight[fid]) perFlight[fid] = {flight: u.flights, updates: []};
-      perFlight[fid].updates.push(u);
-    });
-
-    // Per flight: bereken werkelijke minuten per hole
-    Object.values(perFlight).forEach(({flight, updates: upds})=>{
-      if(upds.length < 1) return;
-      const startMin = tijdNaarMinuten(flight.starttijd);
-      upds.forEach(u=>{
-        const gemeldMin = tijdNaarMinuten(u.tijdstip);
-        const elapsed = gemeldMin - startMin;
-        if(elapsed <= 0 || elapsed > 360) return;
-        const hole = u.hole;
-        // Verwachte cumulatieve tijd voor deze hole
-        const ct = cumTijden(flight.gem_hcp||15, flight.tee_kleur);
-        const verwachtElapsed = ct[hole-1] || 0;
-        // Snelheidsfactor
-        const factor = verwachtElapsed > 0 ? elapsed / verwachtElapsed : 1;
-        metingen.push({
-          hole, elapsed, verwachtElapsed, factor,
-          gem_hcp: flight.gem_hcp||15,
-          n_spelers: flight.n_spelers||2,
-          tee_kleur: flight.tee_kleur||'geel',
-          datum: flight.datum
-        });
-      });
-    });
-
-    if(metingen.length < 3){
-      el.innerHTML = '<div class="empty">Onvoldoende bruikbare metingen</div>';
-      return;
-    }
-
-    // Bereken gemiddelde snelheidsfactor
-    const gemFactor = metingen.reduce((s,m)=>s+m.factor,0) / metingen.length;
-
-    // Bereken voorgestelde parameters
-    const voorstelParams = {
-      par3: Math.round(algParams.par3 * gemFactor * 10) / 10,
-      par4: Math.round(algParams.par4 * gemFactor * 10) / 10,
-      par5: Math.round(algParams.par5 * gemFactor * 10) / 10,
-      hcpAdj: algParams.hcpAdj, // nog niet genoeg data voor verfijning
-      flightAdj: algParams.flightAdj,
-      teeRoodAdj: algParams.teeRoodAdj
-    };
-
-    // Weergave
-    pill.textContent = metingen.length + ' metingen';
-    renderParamTabel(voorstelParams);
-
-    // Per-hole analyse
-    const perHole = {};
-    HOLES_DATA.forEach(([h,par])=>{ perHole[h]={par, metingen:[], gem:0}; });
-    metingen.forEach(m=>{
-      if(perHole[m.hole]) perHole[m.hole].metingen.push(m.factor);
-    });
-
-    let html = '<div style="font-size:.78rem;font-weight:600;color:var(--tm);margin-bottom:8px">Snelheidsfactor per hole <span style="font-weight:400;color:var(--tl)">(1.0 = op schema, >1.0 = trager)</span></div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
-    HOLES_DATA.forEach(([h,par])=>{
-      const d = perHole[h];
-      if(!d.metingen.length){ 
-        html += `<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem">
-          <span style="font-family:'IBM Plex Mono',monospace;font-weight:600">H${h}</span>
-          <span style="color:var(--tl);margin-left:4px">geen data</span></div>`;
-        return;
-      }
-      const gem = d.metingen.reduce((s,v)=>s+v,0)/d.metingen.length;
-      const kleur = gem > 1.1 ? 'var(--red)' : gem > 1.05 ? 'var(--amber)' : 'var(--gl)';
-      html += `<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem;border-left:2px solid ${kleur}">
-        <span style="font-family:'IBM Plex Mono',monospace;font-weight:600">H${h}</span>
-        <span style="color:var(--tl);margin-left:3px">p${par}</span>
-        <span style="float:right;font-family:'IBM Plex Mono',monospace;color:${kleur}">${gem.toFixed(2)}</span></div>`;
-    });
-    html += '</div>';
-    el.innerHTML = html;
-
-  } catch(e){
-    el.innerHTML = `<div class="empty">Fout bij analyseren: ${e.message}</div>`;
-    toast('Analyse mislukt: '+e.message, true);
-  }
-}
-
-async function toonParamRapport(){
-  const popup = document.createElement('div');
-  popup.className = 'slot-popup';
-  popup.onclick = (e)=>{ if(e.target===popup) popup.remove(); };
-
-  const updates = await sbG('flight_updates',
-    'select=flight_id,hole,tijdstip,flights(datum,gem_hcp,n_spelers,tee_kleur)&order=tijdstip.desc&limit=200'
-  );
-
-  const aantalDagen = new Set((updates||[]).map(u=>u.flights?.datum).filter(Boolean)).size;
-  const aantalMetingen = (updates||[]).length;
-
-  popup.innerHTML = `<div class="slot-popup-box" style="max-height:85vh;overflow-y:auto">
-    <div class="slot-popup-titel">Algoritme rapport</div>
-    <div class="slot-popup-sub">Seizoen 2026 · ${aantalMetingen} metingen · ${aantalDagen} speeldagen</div>
-    <div style="margin:12px 0;padding:10px;background:var(--cr);border-radius:var(--r);font-size:.78rem">
-      <div style="font-weight:600;color:var(--tm);margin-bottom:6px">Huidige parameters</div>
-      <div style="font-family:'IBM Plex Mono',monospace;line-height:2;color:var(--td)">
-        Par 3: ${algParams.par3} min · Par 4: ${algParams.par4} min · Par 5: ${algParams.par5} min<br>
-        Hcp correctie: +${algParams.hcpAdj} min/punt boven hcp 10<br>
-        Flightgrootte: +${algParams.flightAdj} min/extra speler<br>
-        Rode tee: ${algParams.teeRoodAdj} min op par 4/5
-      </div>
-    </div>
-    <div style="margin-bottom:12px;padding:10px;background:var(--gp);border-radius:var(--r);font-size:.78rem;color:var(--gd)">
-      <div style="font-weight:600;margin-bottom:4px">Datakwaliteit</div>
-      ${aantalMetingen < 20 ? '⚠ Nog weinig data — parameters zijn indicatief' : aantalMetingen < 100 ? '📊 Groeiende dataset — eerste patronen zichtbaar' : '✅ Voldoende data voor betrouwbare calibratie'}
-    </div>
-    <div id="rapportHoleData" style="font-size:.75rem;color:var(--tl)">Laden...</div>
-    <button class="btn bg2 bf" style="margin-top:12px" onclick="sluitLaatstePopup()">Sluiten</button>
-  </div>`;
-  document.body.appendChild(popup);
-
-  // Vul hole data in
-  setTimeout(async ()=>{
-    await laadParamVoorstel();
-    const rapportEl = document.getElementById('rapportHoleData');
-    if(rapportEl) rapportEl.textContent = 'Zie de analyse hierboven voor details per hole.';
-  }, 100);
-}
-
-// Laad params bij admin init
-function initAlgParams(){
-  // Sync pace inputs met algParams
-  if(document.getElementById('popPar3')) document.getElementById('popPar3').value = algParams.par3;
-  if(document.getElementById('popPar4')) document.getElementById('popPar4').value = algParams.par4;
-  if(document.getElementById('popPar5')) document.getElementById('popPar5').value = algParams.par5;
-  renderParamTabel(null);
-  laadIncidentEmails();
-}
 
 // ─── INCIDENT E-MAIL ──────────────────────────────────────
 let incidentEmailAdres = ''; // kommagescheiden, geladen uit DB
@@ -5708,14 +5472,15 @@ async function laadIncidentEmails(){
 
 async function laadAlgParams(){
   try {
-    const rows = await sbG('algoritme_parameters', 'select=par3_min,par4_min,par5_min,hcp_correctie,vierbal_correctie&limit=1');
+    const rows = await sbG('algoritme_parameters', 'select=bal2_min_minuten_9h,bal2_max_minuten_9h,bal3_min_minuten_9h,bal3_max_minuten_9h,bal4_min_minuten_9h,bal4_max_minuten_9h&limit=1');
     if(rows && rows[0]){
       const r = rows[0];
-      if(r.par3_min != null) algParams.par3 = r.par3_min;
-      if(r.par4_min != null) algParams.par4 = r.par4_min;
-      if(r.par5_min != null) algParams.par5 = r.par5_min;
-      if(r.hcp_correctie != null) algParams.hcpAdj = r.hcp_correctie;
-      if(r.vierbal_correctie != null) algParams.flightAdj = r.vierbal_correctie;
+      if(r.bal2_min_minuten_9h != null) algParams.bal2_min_minuten_9h = r.bal2_min_minuten_9h;
+      if(r.bal2_max_minuten_9h != null) algParams.bal2_max_minuten_9h = r.bal2_max_minuten_9h;
+      if(r.bal3_min_minuten_9h != null) algParams.bal3_min_minuten_9h = r.bal3_min_minuten_9h;
+      if(r.bal3_max_minuten_9h != null) algParams.bal3_max_minuten_9h = r.bal3_max_minuten_9h;
+      if(r.bal4_min_minuten_9h != null) algParams.bal4_min_minuten_9h = r.bal4_min_minuten_9h;
+      if(r.bal4_max_minuten_9h != null) algParams.bal4_max_minuten_9h = r.bal4_max_minuten_9h;
     }
   } catch(e){ console.error('AlgParams laden:', e); }
 }
@@ -5724,11 +5489,12 @@ async function slaAlgParamsOp(){
   try {
     const bestaand = await sbG('algoritme_parameters', 'select=id&limit=1');
     const data = {
-      par3_min: algParams.par3,
-      par4_min: algParams.par4,
-      par5_min: algParams.par5,
-      hcp_correctie: algParams.hcpAdj,
-      vierbal_correctie: algParams.flightAdj
+      bal2_min_minuten_9h: algParams.bal2_min_minuten_9h,
+      bal2_max_minuten_9h: algParams.bal2_max_minuten_9h,
+      bal3_min_minuten_9h: algParams.bal3_min_minuten_9h,
+      bal3_max_minuten_9h: algParams.bal3_max_minuten_9h,
+      bal4_min_minuten_9h: algParams.bal4_min_minuten_9h,
+      bal4_max_minuten_9h: algParams.bal4_max_minuten_9h
     };
     if(bestaand && bestaand[0]){
       await sbPa('algoritme_parameters', 'id=eq.'+bestaand[0].id, data);
@@ -6093,41 +5859,6 @@ function toonVerlLijst(){
   }).catch(function(e){ var el=document.getElementById('verlLijstInhoud'); if(el) el.innerHTML='<div class="empty">Fout: '+e.message+'</div>'; });
 }
 
-async function toonParamInvoer(){
-  if(!paramTabelBewerkModus){
-    // Bewerkmodus aanzetten
-    paramTabelBewerkModus = true;
-    renderParamTabelA();
-    const btn = document.querySelector('[onclick="toonParamInvoer()"]');
-    if(btn) btn.textContent = '💾 Opslaan';
-  } else {
-    // Eerst opslaan (leest invoervelden uit), dan hertekenen
-    await slaParamsHandmatigOp(false);
-    paramTabelBewerkModus = false;
-    renderParamTabelA();
-    const btn = document.querySelector('[onclick="toonParamInvoer()"]');
-    if(btn) btn.textContent = '✏️ Handmatig aanpassen';
-  }
-}
-
-async function slaParamsHandmatigOp(stil){
-  const params = ['par3','par4','par5','hcpAdj','flightAdj','teeWitAdj','teeGeelAdj','teeBlauwAdj','teeRoodAdj'];
-  params.forEach(function(key){
-    const el = document.getElementById('pinv_'+key);
-    if(el){
-      const val = parseFloat(el.value);
-      if(!isNaN(val)) algParams[key] = val;
-    }
-  });
-  if(document.getElementById('popPar3')) document.getElementById('popPar3').value = algParams.par3;
-  if(document.getElementById('popPar4')) document.getElementById('popPar4').value = algParams.par4;
-  if(document.getElementById('popPar5')) document.getElementById('popPar5').value = algParams.par5;
-  await slaAlgParamsOp();
-  const pill = document.getElementById('paramStatusPillA');
-  if(pill){ pill.textContent = 'Bijgewerkt ✓'; pill.style.background = 'var(--gp)'; }
-  if(!stil) toast('Parameters opgeslagen ✓');
-}
-
 // ─── RAPPORT (VOORZITTER) ────────────────────────────────
 async function genereerRapport(){
   const btn = document.querySelector('[onclick="genereerRapport()"]');
@@ -6231,213 +5962,114 @@ async function genereerRapport(){
     if(btn){ btn.textContent = '\ud83d\udcc4 Genereer weekrapport'; btn.disabled = false; }
   }
 }
-// ─── ANALYSE PANEL (VOORZITTER) ──────────────────────────
+// ─── STREEFTIJDEN PANEL (VOORZITTER) ─────────────────────
+// 30 okt 2026: vervangt het oude per-hole-type-/hcp-/tee-kleur-model door direct ingevulde
+// min/max-streeftijden per flightgrootte, 1-op-1 gelijk aan GoyerFlow's Parameters-tab (zie
+// claude/bouwgeschiedenis-marshal-app.md). De "Analyseer data"-automatische kalibratie
+// (dit panel had al eerder zijn eigen, losse implementatie) is vervallen — parameters worden
+// voortaan, net als in GoyerFlow, uitsluitend handmatig ingesteld.
 function laadAnalyse(){
-  renderParamTabelA();
-  renderRondetijdenA();
-  // Document-level handler voor Overnemen knoppen — eenmalig registreren
-  if(!document._overnemenHandlerGezet){
-    document._overnemenHandlerGezet = true;
-    document.addEventListener('click', function(e){
-      const btn = e.target.closest('.overnemen-btn');
-      if(btn){
-        e.stopPropagation();
-        const key = btn.dataset.key;
-        const waarde = parseFloat(btn.dataset.waarde);
-        if(key !== '__sluit__') algParams[key] = waarde;
-        renderParamTabelA(null);
-        const apA = document.getElementById('analysePanelA');
-        if(apA) apA.innerHTML = '';
-        const sw = document.getElementById('sluitAnalyseWrap');
-        if(sw) sw.classList.add('hidden');
-        const pillA = document.getElementById('paramStatusPillA');
-        if(pillA){ pillA.textContent = 'Bijgewerkt ✓'; pillA.style.background = 'var(--gp)'; }
-        slaAlgParamsOp().catch(function(e){ console.error('Opslaan mislukt:', e); });
-        toast('Parameter opgeslagen ✓');
-      }
-    });
-  }
+  renderStreeftijdenVelden();
 }
 
-let paramTabelBewerkModus = false;
-
-function renderRondetijdenA(){
-  const el = document.getElementById('rondetijdenA');
-  if(!el) return;
-  function bereken9(nSpelers, startHole){
-    const pace = {3: algParams.par3, 4: algParams.par4, 5: algParams.par5};
-    const hcpAdj = Math.max(0, (18 - 10) * algParams.hcpAdj);
-    const flightAdj = (nSpelers - 2) * algParams.flightAdj;
-    const holes = HOLES_DATA.slice(startHole - 1, startHole + 8);
-    let totaal = 0;
-    holes.forEach(function(hd){
-      totaal += Math.max(8, pace[hd[1]] + hcpAdj + flightAdj);
-    });
-    return Math.round(totaal);
-  }
-  let html = '<div style="font-size:.75rem;font-weight:600;color:var(--tm);margin-bottom:6px">Verwachte rondetijden</div>';
-  html += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
-  html += '<tr style="border-bottom:1.5px solid var(--cd)">';
-  html += '<th style="text-align:left;padding:4px;color:var(--tl)">Samenstelling</th>';
-  html += '<th style="padding:4px;color:var(--tl);text-align:center">1e 9</th>';
-  html += '<th style="padding:4px;color:var(--tl);text-align:center">2e 9</th>';
-  html += '<th style="padding:4px;color:var(--gd);text-align:center">18 holes</th>';
-  html += '</tr>';
-  [['Tweebal',2],['Driebal',3],['Vierbal',4]].forEach(function(item){
-    const label = item[0], n = item[1];
-    const e1 = bereken9(n,1), e2 = bereken9(n,10);
-    html += '<tr style="border-bottom:1px solid var(--cd)">';
-    html += '<td style="padding:5px 4px;color:var(--tm)">'+label+'</td>';
-    html += '<td style="padding:5px 4px;text-align:center;font-family:IBM Plex Mono,monospace">'+e1+' min</td>';
-    html += '<td style="padding:5px 4px;text-align:center;font-family:IBM Plex Mono,monospace">'+e2+' min</td>';
-    html += '<td style="padding:5px 4px;text-align:center;font-family:IBM Plex Mono,monospace;font-weight:700;color:var(--gd)">'+(e1+e2)+' min</td>';
-    html += '</tr>';
-  });
-  html += '</table>';
-  html += '<div style="font-size:.7rem;color:var(--tl);margin-top:4px">In minuten. Referentie: hcp 18. Tee-correcties niet inbegrepen.</div>';
-  el.innerHTML = html;
+// "#u##"-notatie voor de voorbeeldtabellen, zelfde formaat als GoyerFlow's formatUurMin().
+function formatUurMin(minuten){
+  const totaal = Math.round(minuten);
+  const h = Math.floor(totaal / 60);
+  const m = totaal - h * 60;
+  return h + 'u' + String(m).padStart(2, '0');
 }
 
-function renderParamTabelA(voorstel){
-  const el = document.getElementById('paramTabelA');
-  if(!el) return;
-  const params = [
-    {key:'par3', label:'Par 3', eenheid:'min', step:0.5, min:8, max:20},
-    {key:'par4', label:'Par 4', eenheid:'min', step:0.5, min:10, max:25},
-    {key:'par5', label:'Par 5', eenheid:'min', step:0.5, min:12, max:28},
-    {key:'hcpAdj', label:'Hcp correctie (per punt boven 10)', eenheid:'min', step:0.01, min:0, max:0.5},
-    {key:'flightAdj', label:'Flightgrootte (per extra speler boven 2)', eenheid:'min', step:0.5, min:0, max:5},
-  ];
-  const STANDAARD = {par3:9.5, par4:11.1, par5:13.6, hcpAdj:0.05, flightAdj:0.833};
-  const bewerk = paramTabelBewerkModus && !voorstel;
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
-  html += '<tr style="border-bottom:1.5px solid var(--cd)"><th style="text-align:left;padding:5px 4px;color:var(--tl)">Parameter</th><th style="padding:5px 4px;color:var(--tl)">'+(bewerk ? 'Waarde' : 'Huidig')+'</th>';
-  html += '<th style="padding:5px 4px;color:var(--tl);text-align:center">Standaard</th>';
-  if(voorstel) html += '<th style="padding:5px 4px;color:var(--gd)">Voorstel</th><th style="padding:5px 4px"></th>';
-  html += '</tr>';
-  params.forEach(function(p){
-    const huidig = algParams[p.key];
-    const standaard = STANDAARD[p.key];
-    const afwijking = standaard !== undefined && huidig !== standaard;
-    const vw = voorstel ? voorstel[p.key] : undefined;
-    const verschil = vw !== undefined ? vw - huidig : null;
-    const kleur = verschil > 0 ? 'var(--amber)' : verschil < 0 ? 'var(--gm)' : 'var(--tl)';
-    html += '<tr style="border-bottom:1px solid var(--cd)">';
-    html += '<td style="padding:6px 4px;color:var(--tm)">'+p.label+'</td>';
-    if(bewerk){
-      html += '<td style="padding:4px 4px;text-align:center"><input type="number" id="pinv_'+p.key+'" value="'+huidig+'" step="'+p.step+'" min="'+p.min+'" max="'+p.max+'" style="width:65px;padding:3px 5px;border:1.5px solid var(--gm);border-radius:var(--r);font-family:IBM Plex Mono,monospace;font-size:.8rem;text-align:right;background:var(--wh);color:var(--td)"></td>';
-    } else {
-      html += '<td style="padding:6px 4px;text-align:center;font-family:IBM Plex Mono,monospace;'+(afwijking?'font-weight:600;color:var(--amber)':'')+'">'+huidig+' '+p.eenheid+'</td>';
-    }
-    html += '<td style="padding:6px 4px;text-align:center;font-family:IBM Plex Mono,monospace;color:var(--tl)">'+standaard+' '+p.eenheid+'</td>';
-    if(voorstel){
-      html += '<td style="padding:6px 4px;text-align:center;font-family:IBM Plex Mono,monospace;color:'+kleur+'">'+(vw !== undefined ? vw+' '+p.eenheid : '—')+'</td>';
-      html += '<td style="padding:6px 4px;text-align:center">';
-      if(vw !== undefined && vw !== huidig){
-        html += `<button class="overnemen-btn" data-key="${p.key}" data-waarde="${vw}" style="font-size:.65rem;padding:3px 8px;background:var(--gm);color:#fff;border:none;border-radius:4px;cursor:pointer">Overnemen</button>`;
-      } else if(vw !== undefined){
-        html += '<span style="color:var(--gl);font-size:.75rem">&#10003;</span>';
-      }
-      html += '</td>';
-    }
-    html += '</tr>';
-  });
-  html += '</table>';
-  el.innerHTML = html;
-  // Event delegation voor Overnemen knoppen
-  el.querySelectorAll('.overnemen-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      pasParamAan(btn.dataset.key, parseFloat(btn.dataset.waarde));
-    });
-  });
-  renderRondetijdenA();
+function streefWaarde(key){
+  const input = document.getElementById('streef_'+key);
+  const val = input ? parseFloat(input.value) : NaN;
+  return isNaN(val) ? 0 : val;
 }
 
-async function laadParamVoorstelA(){
-  const el = document.getElementById('analysePanelA');
-  const pill = document.getElementById('analyseDataPillA');
+function renderStreeftijdenVelden(){
+  const el = document.getElementById('streeftijdenVelden');
   if(!el) return;
-  el.innerHTML = '<div class="loading">Data analyseren...</div>';
-  const sluitWrap = document.getElementById('sluitAnalyseWrap');
-  if(sluitWrap) sluitWrap.classList.remove('hidden');
-  try {
-    const updates = await sbG('flight_updates',
-      'select=flight_id,hole,tijdstip,flights(starttijd,gem_hcp,n_spelers,tee_kleur,ronde_type,datum)&order=tijdstip.asc'
-    );
-    if(!updates || updates.length < 5){
-      el.innerHTML = '<div class="empty">Onvoldoende data — minimaal 5 metingen nodig</div>';
-      pill.textContent = (updates ? updates.length : 0) + ' metingen';
-      return;
-    }
-    const perFlight = {};
-    updates.forEach(function(u){
-      if(!u.flights) return;
-      const fid = u.flight_id;
-      if(!perFlight[fid]) perFlight[fid] = {flight: u.flights, updates: []};
-      perFlight[fid].updates.push(u);
-    });
-    const metingen = [];
-    Object.values(perFlight).forEach(function(item){
-      const flight = item.flight;
-      const upds = item.updates;
-      if(!upds.length) return;
-      const startMin = tijdNaarMinuten(flight.starttijd);
-      upds.forEach(function(u){
-        const gemeldMin = tijdNaarMinuten(u.tijdstip);
-        const elapsed = gemeldMin - startMin;
-        if(elapsed <= 0 || elapsed > 360) return;
-        const ct = cumTijden(flight.gem_hcp||15, flight.tee_kleur);
-        const verwachtElapsed = ct[u.hole-1] || 0;
-        const factor = verwachtElapsed > 0 ? elapsed / verwachtElapsed : 1;
-        metingen.push({hole: u.hole, factor: factor, datum: flight.datum});
-      });
-    });
-    if(metingen.length < 3){
-      el.innerHTML = '<div class="empty">Onvoldoende bruikbare metingen</div>';
-      return;
-    }
-    const gemFactor = metingen.reduce(function(s,m){ return s+m.factor; }, 0) / metingen.length;
-    const voorstelParams = {
-      par3: Math.round(algParams.par3 * gemFactor * 10) / 10,
-      par4: Math.round(algParams.par4 * gemFactor * 10) / 10,
-      par5: Math.round(algParams.par5 * gemFactor * 10) / 10,
-      hcpAdj: algParams.hcpAdj,
-      flightAdj: algParams.flightAdj,
-      teeRoodAdj: algParams.teeRoodAdj
-    };
-    const aantalDagen = new Set(metingen.map(function(m){ return m.datum; }).filter(Boolean)).size;
-    if(pill) pill.textContent = metingen.length + ' metingen';
-    renderParamTabelA(voorstelParams);
-    const perHole = {};
-    HOLES_DATA.forEach(function(h){ perHole[h[0]] = {par: h[1], metingen: []}; });
-    metingen.forEach(function(m){ if(perHole[m.hole]) perHole[m.hole].metingen.push(m.factor); });
-    // Datakwaliteit indicator
-    // Drempel: 200 metingen voor betrouwbare par3/4/5 voorstellen
-    const drempel = 200;
-    const kwaliteit = metingen.length < 20
-      ? '<div style="padding:8px 10px;background:var(--amberl);border-radius:var(--r);font-size:.75rem;color:var(--amber);margin-bottom:10px">⚠ Te weinig data ('+metingen.length+' metingen) — minimaal '+drempel+' metingen nodig. Voorstellen zijn puur indicatief.</div>'
-      : metingen.length < drempel
-      ? '<div style="padding:8px 10px;background:var(--amberl);border-radius:var(--r);font-size:.75rem;color:var(--amber);margin-bottom:10px">📊 '+metingen.length+' metingen over '+aantalDagen+' speeldagen — nog '+(drempel-metingen.length)+' nodig voor betrouwbare calibratie. Voorstellen zijn indicatief.</div>'
-      : '<div style="padding:8px 10px;background:var(--gp);border-radius:var(--r);font-size:.75rem;color:var(--gd);margin-bottom:10px">✅ '+metingen.length+' metingen over '+aantalDagen+' speeldagen — voldoende voor betrouwbare calibratie van par 3/4/5.</div>';
-    let html = kwaliteit;
-    html += '<div style="font-size:.78rem;font-weight:600;color:var(--tm);margin-bottom:8px">Snelheidsfactor per hole</div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
-    HOLES_DATA.forEach(function(hd){
-      const h = hd[0], par = hd[1];
-      const d = perHole[h];
-      if(!d || !d.metingen.length){
-        html += '<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem"><b>H'+h+'</b> <span style="color:var(--tl)">geen data</span></div>';
-        return;
-      }
-      const gem = d.metingen.reduce(function(s,v){ return s+v; },0)/d.metingen.length;
-      const kleur = gem > 1.1 ? 'var(--red)' : gem > 1.05 ? 'var(--amber)' : 'var(--gl)';
-      html += '<div style="padding:5px 7px;background:var(--cr);border-radius:4px;font-size:.72rem;border-left:2px solid '+kleur+'"><b>H'+h+'</b> p'+par+' <span style="float:right;color:'+kleur+'">'+gem.toFixed(2)+'</span></div>';
-    });
+  const VELDEN = [{n:2, label:'2-bal'}, {n:3, label:'3-bal'}, {n:4, label:'4-bal'}];
+  let html = '';
+  VELDEN.forEach(function(v){
+    const minKey = 'bal'+v.n+'_min_minuten_9h', maxKey = 'bal'+v.n+'_max_minuten_9h';
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">';
+    html += '<div style="width:72px;font-size:.82rem;color:var(--tm)">'+v.label+' <span style="color:var(--tl);font-size:.7rem">(9 holes)</span></div>';
+    html += '<label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--tl)">min <input type="number" id="streef_'+minKey+'" value="'+algParams[minKey]+'" step="1" min="0" style="width:60px;padding:4px 6px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:IBM Plex Mono,monospace;font-size:.8rem;text-align:right;background:var(--wh);color:var(--td)"></label>';
+    html += '<label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--tl)">max <input type="number" id="streef_'+maxKey+'" value="'+algParams[maxKey]+'" step="1" min="0" style="width:60px;padding:4px 6px;border:1.5px solid var(--cd);border-radius:var(--r);font-family:IBM Plex Mono,monospace;font-size:.8rem;text-align:right;background:var(--wh);color:var(--td)"></label>';
     html += '</div>';
+  });
+  el.innerHTML = html;
+  ['bal2_min_minuten_9h','bal2_max_minuten_9h','bal3_min_minuten_9h','bal3_max_minuten_9h','bal4_min_minuten_9h','bal4_max_minuten_9h'].forEach(function(key){
+    const input = document.getElementById('streef_'+key);
+    if(input) input.addEventListener('input', herberekenRondetijdenA);
+  });
+  herberekenRondetijdenA();
+}
 
+function herberekenRondetijdenA(){
+  const btn = document.getElementById('streeftijdenOpslaanBtn');
+  if(btn) btn.disabled = false;
+  const fout = document.getElementById('paramFoutA');
+  if(fout) fout.innerHTML = '';
+
+  function tabel(id, titel, factor){
+    const el = document.getElementById(id);
+    if(!el) return;
+    let html = '<div style="font-size:.75rem;font-weight:600;color:var(--tm);margin-bottom:6px">'+titel+'</div>';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
+    html += '<tr style="border-bottom:1.5px solid var(--cd)">';
+    html += '<th style="text-align:left;padding:4px;color:var(--tl)">Flightgrootte</th>';
+    html += '<th style="padding:4px;color:var(--tl);text-align:center">Streeftijd</th>';
+    html += '</tr>';
+    [2,3,4].forEach(function(n){
+      const min = streefWaarde('bal'+n+'_min_minuten_9h') * factor;
+      const max = streefWaarde('bal'+n+'_max_minuten_9h') * factor;
+      html += '<tr style="border-bottom:1px solid var(--cd)">';
+      html += '<td style="padding:5px 4px;color:var(--tm)">'+n+'-bal</td>';
+      html += '<td style="padding:5px 4px;text-align:center;font-family:IBM Plex Mono,monospace">'+formatUurMin(min)+' - '+formatUurMin(max)+'</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
     el.innerHTML = html;
+  }
+  tabel('rondetijdenA9', 'Verwachte rondetijden — 9 holes', 1);
+  tabel('rondetijdenA18', 'Verwachte rondetijden — 18 holes', 2);
+}
+
+async function slaStreeftijdenOp(){
+  const fout = document.getElementById('paramFoutA');
+  const keys = ['bal2_min_minuten_9h','bal2_max_minuten_9h','bal3_min_minuten_9h','bal3_max_minuten_9h','bal4_min_minuten_9h','bal4_max_minuten_9h'];
+  const nieuw = {};
+  let ongeldig = false;
+  keys.forEach(function(key){
+    const input = document.getElementById('streef_'+key);
+    const v = input ? parseFloat(input.value) : NaN;
+    if(isNaN(v) || v < 0) ongeldig = true;
+    nieuw[key] = isNaN(v) ? 0 : v;
+  });
+  if(ongeldig){
+    if(fout) fout.innerHTML = '<div style="padding:8px 10px;background:var(--amberl);border-radius:var(--r);font-size:.75rem;color:var(--amber)">Vul voor elk veld een geldig, niet-negatief getal in.</div>';
+    return;
+  }
+  if(nieuw.bal2_max_minuten_9h < nieuw.bal2_min_minuten_9h || nieuw.bal3_max_minuten_9h < nieuw.bal3_min_minuten_9h || nieuw.bal4_max_minuten_9h < nieuw.bal4_min_minuten_9h){
+    if(fout) fout.innerHTML = '<div style="padding:8px 10px;background:var(--amberl);border-radius:var(--r);font-size:.75rem;color:var(--amber)">Maximaal mag niet kleiner zijn dan minimaal, voor elke flightgrootte.</div>';
+    return;
+  }
+  Object.assign(algParams, nieuw);
+  const btn = document.getElementById('streeftijdenOpslaanBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Bezig…'; }
+  try {
+    await slaAlgParamsOp();
+    if(fout) fout.innerHTML = '';
+    const pill = document.getElementById('paramStatusPillA');
+    if(pill){ pill.textContent = 'Bijgewerkt ✓'; pill.style.background = 'var(--gp)'; }
+    toast('Streeftijden opgeslagen ✓');
   } catch(e){
-    el.innerHTML = '<div class="empty">Fout: '+e.message+'</div>';
+    if(btn) btn.disabled = false;
+    if(fout) fout.innerHTML = '<div style="padding:8px 10px;background:var(--amberl);border-radius:var(--r);font-size:.75rem;color:var(--amber)">Opslaan mislukt: '+e.message+'</div>';
+  } finally {
+    if(btn) btn.textContent = '💾 Opslaan';
   }
 }
 

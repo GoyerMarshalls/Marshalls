@@ -1065,7 +1065,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.11.02';
+const APP_VERSIE = '1.11.03';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -4411,16 +4411,22 @@ function renderTracker(){
   // verwachteHoleNu(f) geeft bij een lopende flight al de juiste fysieke hole terug, maar bij een
   // afgeronde flight (geen laatste_hole-melding) geeft die een generieke 99 ("klaar") — dat zette
   // álle afgeronde flights, van elke rondelengte, op één hoop en liet de sortering binnen die hoop
-  // terugvallen op kale starttijd. Gelijkgetrokken met GoyerFlow's trackerSortHole (30 oktober 2026,
-  // Kay's verzoek): een afgeronde flight sorteert voortaan op zijn eigen laatste fysieke hole (9 bij
-  // een voor-9-ronde, 18 bij 18 holes of een achter-9-ronde), dus flights groeperen weer per
-  // werkelijke hole i.p.v. alleen op tijd. Zelfde fysieke-eindhole-conventie als `holeWeergave` in
-  // renderFlightItem hieronder.
+  // terugvallen op kale starttijd. In v1.11.02 gelijkgetrokken met GoyerFlow's trackerSortHole: een
+  // afgeronde flight kreeg toen zijn eigen laatste fysieke hole (9 bij een voor-9-ronde, 18 bij 18
+  // holes/achter-9) als sorteersleutel — maar dat zette 'm daarmee in dezelfde sortHole-groep als een
+  // nog SPELENDE flight die toevallig over diezelfde fysieke hole loopt (bijv. een 18-holes-flight die
+  // nu op hole 9 verwacht wordt). Gevolg, gemeld door Kay met screenshots (31 oktober 2026): een allang
+  // afgeronde flight stond tussen nog actieve flights in, verwarrend voor een marshal die de lijst
+  // afscant. Fix: een afgeronde flight krijgt voortaan een sorteersleutel van 100 + zijn eigen laatste
+  // fysieke hole (dus 101-118) — altijd hoger dan elke mogelijke actieve sortHole (1-18), zodat ALLE
+  // afgeronde flights na ALLE nog actieve flights komen te staan, nooit ertussenin. Onderling blijven
+  // ze gegroepeerd op hun eigen laatste fysieke hole (zelfde conventie als `holeWeergave` in
+  // renderFlightItem), met starttijd als tie-break, zoals voorheen.
   function actiefSortHole(f){
     const vw = verwachteHoleNu(f);
     if(!vw || vw >= 99){
       const volgorde = getHoleVolgorde(f.ronde_type||'18holes');
-      return volgorde[volgorde.length-1];
+      return 100 + volgorde[volgorde.length-1];
     }
     return vw;
   }

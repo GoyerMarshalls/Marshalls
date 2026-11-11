@@ -419,6 +419,18 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 #baanflowCard.baanflow-pseudofullscreen .baanflowlegenda{flex-wrap:wrap;justify-content:flex-start;gap:12px 16px}
 #baanflowCard.baanflow-pseudofullscreen .baanflowlegendaitem{font-size:14px;gap:6px}
 #baanflowCard.baanflow-pseudofullscreen .baanflowmarker{width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));font-size:clamp(13px,1.3vw,24px)}
+/* v0.23.7 / v1.13.6: inzoomen. Zie baanflowZoomKoppel in het script. touch-action: pan-y laat één vinger gewoon
+   de pagina scrollen en geeft het knijpen aan ons; zodra je ingezoomd bent (.baanflowingezoomd) pakt één vinger
+   de kaart (touch-action:none). De iconen schalen tegengesteld mee (--bf-inv) zodat ze even groot blijven. */
+.baanflowkaartwrap{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.baanflowkaartwrap.baanflowingezoomd{touch-action:none;cursor:grab}
+.baanflowzoomlaag{position:absolute;inset:0;transform-origin:0 0}
+.baanflowzoomlaag .baanflowmarker{transform:translate(-50%,-50%) scale(var(--bf-inv,1))}
+.baanflowzoomknoppen{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.baanflowzoombtn{width:34px;height:34px;border-radius:50%;border:1px solid #ECE7DA;background:rgba(255,255,255,0.94);
+  box-shadow:0 1px 4px rgba(0,0,0,0.18);font-family:inherit;font-size:18px;font-weight:700;line-height:1;
+  color:#6B6558;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.baanflowzoombtn[data-bfzoom="reset"]{font-size:12px}
 .baanflowdetailoverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
   justify-content:center;padding:18px;z-index:50}
 .baanflowdetailmodal{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:420px;
@@ -1251,6 +1263,22 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 /* ================================================================================================
+   v1.13.6 (11 november 2026) — Baan Flow-kaart: inzoomen, en "Volledig scherm" verborgen op een telefoon in
+   staande stand (gelijk aan GoyerFlow v0.23.7).
+   Kay's verzoeken, met een iPhone-screenshot van GoyerFlow: waarom staat Volledig scherm ook op de iPhone,
+   en kan inzoomen op iPhone/Samsung/iPad/tablet?
+   - Volledig scherm: de knop is sinds v1.13.2 op elk toestel zichtbaar (CSS-terugval voor iPhone/oude iPad).
+     In staande stand op een telefoon voegt dat niets toe (de kaart wordt niet groter, alleen de header/
+     navigatiebalk verdwijnt). Nu verborgen bij breedte < 600px én staand, tenzij volledig scherm al
+     actief is. Op iPad/tablet en op een telefoon in liggende stand blijft hij.
+   - Inzoomen: knijpen (twee vingers), slepen met één vinger (alleen zodra je al ingezoomd bent; op zoomniveau
+     1 scrolt één vinger gewoon de pagina), dubbeltikken in/uit, scrollwiel/trackpad-knijpen, en +/−/1×-
+     knoppen op de kaart. Maximaal 5×. De flight-icoontjes blijven even groot (tegengesteld meeschalen via
+     --bf-inv) en aanklikbaar; een sleepbeweging opent geen popup. De zoomstand blijft behouden bij de
+     verversing en bij volledig scherm aan/uit (bewaard als fracties van de kaartafmeting).
+     Nieuw element .baanflowzoomlaag rond afbeelding + markers; markerplaatsing (baanflowPuntVoor) ongewijzigd.
+   ================================================================================================ */
+/* ================================================================================================
    v1.13.5 (11 november 2026) — Baan Flow-weergave nu exact gelijk aan GoyerFlow (iPad/tablet), en de
    legenda staat op één rij.
 
@@ -1527,7 +1555,7 @@ function amsWandklok(datum, tijd){
 }
 
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.13.5';
+const APP_VERSIE = '1.13.6';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -4985,6 +5013,176 @@ function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* ---- Inzoomen op de Baan Flow-kaart (v0.23.7 / Marshal v1.13.6). Knijpen (twee vingers), slepen (één vinger,
+   alleen als je al ingezoomd bent — op zoomniveau 1 blijft één vinger gewoon de pagina scrollen), dubbeltikken
+   (in/uit), scrollwiel/trackpad-knijpen, plus +/−/1×-knoppen op de kaart. De zoomstand wordt als FRACTIES van
+   de kaartafmeting bewaard (niet in pixels), zodat hij klopt als de kaart van grootte verandert (volledig
+   scherm aan/uit, schermrotatie) en de 20-seconden-verversing hem niet kwijtraakt. De markers staan in
+   .baanflowzoomlaag (zelfde coördinaten als voorheen, percentages) en schalen via --bf-inv tegengesteld mee,
+   zodat ze even groot en aanklikbaar blijven. ---- */
+const BAANFLOW_ZOOM_MAX = 5;
+const baanflowZoom = { s: 1, fx: 0, fy: 0 };
+let baanflowZoomWrap = null;
+let baanflowZoomBewogen = false;
+
+function baanflowZoomKlem() {
+  const z = baanflowZoom;
+  z.s = Math.max(1, Math.min(BAANFLOW_ZOOM_MAX, z.s));
+  z.fx = Math.max(1 - z.s, Math.min(0, z.fx));
+  z.fy = Math.max(1 - z.s, Math.min(0, z.fy));
+}
+function baanflowZoomToepassen() {
+  const wrap = baanflowZoomWrap;
+  if (!wrap) return;
+  const laag = wrap.querySelector(".baanflowzoomlaag");
+  if (!laag) return;
+  baanflowZoomKlem();
+  const z = baanflowZoom;
+  const r = wrap.getBoundingClientRect();
+  laag.style.transform = `translate(${(z.fx * r.width).toFixed(2)}px,${(z.fy * r.height).toFixed(2)}px) scale(${z.s.toFixed(4)})`;
+  laag.style.setProperty("--bf-inv", (1 / z.s).toFixed(4));
+  const ingezoomd = z.s > 1.001;
+  wrap.classList.toggle("baanflowingezoomd", ingezoomd);
+  const reset = wrap.querySelector('[data-bfzoom="reset"]');
+  if (reset) reset.style.display = ingezoomd ? "" : "none";
+}
+// Zoom naar niveau s2 rond het punt (px,py) in kaart-pixels (relatief aan de linkerbovenhoek van de kaart).
+function baanflowZoomRond(s2, px, py) {
+  const wrap = baanflowZoomWrap;
+  if (!wrap) return;
+  const r = wrap.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const z = baanflowZoom;
+  s2 = Math.max(1, Math.min(BAANFLOW_ZOOM_MAX, s2));
+  const pfx = px / r.width, pfy = py / r.height, k = s2 / z.s;
+  z.fx = pfx - (pfx - z.fx) * k;
+  z.fy = pfy - (pfy - z.fy) * k;
+  z.s = s2;
+  baanflowZoomToepassen();
+}
+function baanflowZoomReset() {
+  baanflowZoom.s = 1; baanflowZoom.fx = 0; baanflowZoom.fy = 0;
+  baanflowZoomToepassen();
+}
+function baanflowZoomKnoppen() {
+  const d = document.createElement("div");
+  d.className = "baanflowzoomknoppen";
+  [["in", "+", "Inzoomen"], ["uit", "−", "Uitzoomen"], ["reset", "1×", "Terug naar de hele kaart"]].forEach(([k, t, titel]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "baanflowzoombtn"; b.setAttribute("data-bfzoom", k);
+    b.textContent = t; b.title = titel; b.setAttribute("aria-label", titel);
+    if (k === "reset") b.style.display = "none";
+    d.appendChild(b);
+  });
+  return d;
+}
+// Koppelt de zoom-bediening aan (een nieuwe) kaart-wrap en past de bewaarde zoomstand toe. Veilig om bij elke
+// verversing opnieuw aan te roepen: de gebeurtenis-luisteraars worden per wrap-element maar één keer gezet.
+function baanflowZoomKoppel(wrap) {
+  if (!wrap) return;
+  baanflowZoomWrap = wrap;
+  if (!wrap._bfZoomGekoppeld) {
+    wrap._bfZoomGekoppeld = true;
+    const ptrs = new Map();
+    let vorigMidden = null, vorigeAfstand = 0, start = null, laatsteTik = null;
+    const midden = () => {
+      const p = [...ptrs.values()];
+      return { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) };
+    };
+    const bewegen = (ev) => {
+      const p = ptrs.get(ev.pointerId);
+      if (!p) return;
+      const r = wrap.getBoundingClientRect();
+      if (ptrs.size === 2) {
+        p.x = ev.clientX; p.y = ev.clientY;
+        const m = midden();
+        if (vorigeAfstand > 0 && vorigMidden) {
+          baanflowZoomRond(baanflowZoom.s * (m.d / vorigeAfstand), m.x - r.left, m.y - r.top);
+          baanflowZoom.fx += (m.x - vorigMidden.x) / r.width;
+          baanflowZoom.fy += (m.y - vorigMidden.y) / r.height;
+          baanflowZoomToepassen();
+        }
+        vorigMidden = m; vorigeAfstand = m.d;
+        ev.preventDefault();
+      } else if (ptrs.size === 1 && baanflowZoom.s > 1.001) {
+        if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 6) baanflowZoomBewogen = true;
+        if (baanflowZoomBewogen) {
+          baanflowZoom.fx += (ev.clientX - p.x) / r.width;
+          baanflowZoom.fy += (ev.clientY - p.y) / r.height;
+          baanflowZoomToepassen();
+        }
+        p.x = ev.clientX; p.y = ev.clientY;
+        ev.preventDefault();
+      } else {
+        if (start && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 6) baanflowZoomBewogen = true;
+        p.x = ev.clientX; p.y = ev.clientY;
+      }
+    };
+    const klaar = (ev) => {
+      if (!ptrs.has(ev.pointerId)) return;
+      ptrs.delete(ev.pointerId);
+      if (ptrs.size < 2) { vorigMidden = null; vorigeAfstand = 0; }
+      if (ptrs.size === 1) { const rest = [...ptrs.values()][0]; start = { x: rest.x, y: rest.y, t: Date.now(), opMarker: true }; }
+      if (ptrs.size === 0) {
+        window.removeEventListener("pointermove", bewegen);
+        window.removeEventListener("pointerup", klaar);
+        window.removeEventListener("pointercancel", klaar);
+        // Dubbeltik (twee korte tikken vlak na elkaar, niet op een marker): in/uit zoomen op die plek.
+        if (ev.type === "pointerup" && start && !baanflowZoomBewogen && !start.opMarker && Date.now() - start.t < 350) {
+          const nu = Date.now();
+          if (laatsteTik && nu - laatsteTik.t < 350 && Math.hypot(ev.clientX - laatsteTik.x, ev.clientY - laatsteTik.y) < 30) {
+            const r = wrap.getBoundingClientRect();
+            baanflowZoomRond(baanflowZoom.s > 1.5 ? 1 : 2.5, ev.clientX - r.left, ev.clientY - r.top);
+            laatsteTik = null;
+          } else {
+            laatsteTik = { t: nu, x: ev.clientX, y: ev.clientY };
+          }
+        }
+      }
+    };
+    wrap.addEventListener("pointerdown", (e) => {
+      if (e.target.closest && e.target.closest(".baanflowzoombtn")) return;
+      if (ptrs.size === 0) baanflowZoomBewogen = false;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 1) {
+        start = { x: e.clientX, y: e.clientY, t: Date.now(), opMarker: !!(e.target.closest && e.target.closest(".baanflowmarker")) };
+        window.addEventListener("pointermove", bewegen, { passive: false });
+        window.addEventListener("pointerup", klaar);
+        window.addEventListener("pointercancel", klaar);
+      }
+      if (ptrs.size === 2) { const m = midden(); vorigMidden = m; vorigeAfstand = m.d; baanflowZoomBewogen = true; }
+    });
+    // Na een sleepbeweging mag de klik die de browser daarna alsnog afvuurt geen marker-popup openen.
+    wrap.addEventListener("click", (e) => {
+      if (baanflowZoomBewogen) { e.stopPropagation(); e.preventDefault(); baanflowZoomBewogen = false; }
+    }, true);
+    wrap.addEventListener("click", (e) => {
+      const knop = e.target.closest && e.target.closest("[data-bfzoom]");
+      if (!knop) return;
+      const r = wrap.getBoundingClientRect(), k = knop.getAttribute("data-bfzoom");
+      if (k === "reset") baanflowZoomReset();
+      else baanflowZoomRond(baanflowZoom.s * (k === "in" ? 1.6 : 1 / 1.6), r.width / 2, r.height / 2);
+    });
+    wrap.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const r = wrap.getBoundingClientRect();
+      baanflowZoomRond(baanflowZoom.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)), e.clientX - r.left, e.clientY - r.top);
+    }, { passive: false });
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => baanflowZoomToepassen()).observe(wrap);
+  }
+  baanflowZoomToepassen();
+}
+// Telefoon in staande stand: "Volledig scherm" voegt daar niets toe (de kaart wordt niet groter) — knop verbergen,
+// tenzij volledig scherm al actief is (anders zou je er niet meer uit kunnen).
+function baanflowFsKnopMoetVerborgen() {
+  return !!(window.matchMedia && window.matchMedia("(max-width:599px) and (orientation:portrait)").matches);
+}
+if (window.matchMedia) {
+  const mq = window.matchMedia("(max-width:599px) and (orientation:portrait)");
+  const bijwerken = () => { if (typeof baanflowFullscreenKnopBijwerken === "function") baanflowFullscreenKnopBijwerken(); };
+  if (mq.addEventListener) mq.addEventListener("change", bijwerken); else if (mq.addListener) mq.addListener(bijwerken);
+}
+
 function renderBaanFlow(flights){
   const nu = new Date();
   const allePosities = flights.map(f => marshalBerekenFlightPositie(f, nu));
@@ -5039,10 +5237,12 @@ function renderBaanFlow(flights){
     wrapEl.style.aspectRatio = `${BAANFLOW_WRAP_W.toFixed(3)}/${BAANFLOW_WRAP_H.toFixed(3)}`;
     const imgStyle = `width:${((BAANFLOW_IMG_W/BAANFLOW_WRAP_W)*100).toFixed(4)}%;height:${((BAANFLOW_IMG_H/BAANFLOW_WRAP_H)*100).toFixed(4)}%;`
       + `transform:translate(-50%,-50%) rotate(${BAANFLOW_FIJNROTATIE_GRADEN}deg)`;
-    wrapEl.innerHTML = `<img class="baanflowkaart" src="data:image/webp;base64,${BAANFLOW_MAP_B64}" alt="North Course" style="${imgStyle}"/>` + markersHtml;
+    wrapEl.innerHTML = `<div class="baanflowzoomlaag"><img class="baanflowkaart" src="data:image/webp;base64,${BAANFLOW_MAP_B64}" alt="North Course" style="${imgStyle}"/>` + markersHtml + `</div>`;
+    wrapEl.appendChild(baanflowZoomKnoppen());
     wrapEl.querySelectorAll('.baanflowmarker').forEach(node=>{
       node.addEventListener('click', ()=> openBaanFlowDetail(node.getAttribute('data-flight-id'), zichtbaar, knelpuntPerId));
     });
+    baanflowZoomKoppel(wrapEl); // v1.13.6: zoomstand terugzetten + bediening koppelen
   }
   const kaartEl = document.getElementById('baanflowCard');
   if(kaartEl) kaartEl.style.setProperty('--baanflow-wrap-ratio', (BAANFLOW_WRAP_W/BAANFLOW_WRAP_H).toFixed(5));
@@ -5126,6 +5326,8 @@ function baanflowFullscreenKnopBijwerken() {
   btn.appendChild(baanflowFullscreenSvg(actief));
   btn.appendChild(document.createTextNode(actief ? ' Scherm verlaten' : ' Volledig scherm'));
   btn.title = actief ? 'Volledig scherm verlaten' : 'Kaart op volledig scherm tonen';
+  // v1.13.6: op een telefoon in staande stand voegt de knop niets toe — verbergen (zie baanflowFsKnopMoetVerborgen).
+  btn.style.display = !actief && baanflowFsKnopMoetVerborgen() ? 'none' : '';
 }
 let baanflowFsListenerAangesloten = false;
 function baanflowAttachFullscreenListener() {

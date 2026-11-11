@@ -394,6 +394,35 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 #baanflowCard.baanflow-pseudofullscreen .baanflowmarker{
   width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));
   font-size:clamp(13px,1.3vw,24px)}
+/* Tablet/desktop (11 november 2026, vervolg 4) — Kay's vraag: "waarom niet gewoon standaard
+   volledig scherm op een iPad/tablet, maar dan wel met de top- en bodem-menubalken zichtbaar?".
+   Eerst geprobeerd (en weer teruggedraaid, zie claude/bouwgeschiedenis-marshal-app.md): de kaart
+   zelf dezelfde min(breedte, hoogte-op-basis-van-100vh)-formule geven als de volledig-scherm-staat
+   hierboven. Bleek dubbel fout: (1) op een staand/smal scherm (portrait-tablet) is de kaart door
+   zijn vaste, liggende aspect-ratio (ca. 1,47:1) altijd al breedte-gebonden — ook 100% van de
+   beschikbare breedte geeft dan een relatief lage kaart; de hoogte-tak van die formule won daar
+   dus nooit, en de regel deed in de praktijk niets. (2) op een laag/breed scherm (telefoon in
+   landscape, bijv. 852×393) won de hoogte-tak juist wél, en kneep de kaart tot een piepklein
+   postzegeltje — minder bruikbaar dan de oorspronkelijke, simpele width:100%-regel. De kaart zelf
+   dus ongemoeid gelaten (blijft width:100%, hoogte volgt uit zijn vaste aspect-ratio — raakt de
+   percentage-gebaseerde markerplaatsing in baanflowPuntVoor niet). In plaats daarvan alleen
+   #baanflowCard (de witte kaart-kaart, dus de hele omlijnde sectie) laten groeien tot de volledige
+   resterende ruimte tussen header en onderste navigatiebalk, met zijn inhoud verticaal gecentreerd.
+   Resultaat: één grote, witte sectie die de hele beschikbare ruimte vult (geen kaal crème-kleurige
+   lege strook meer onder de legenda op een portrait-tablet, zie Kay's screenshot), met de kaart
+   zelf gecentreerd i.p.v. bovenaan geplakt — en op een krap/laag scherm blijft het gewoon een
+   normale, scrollbare sectie (min-height is een ondergrens, geen bovengrens), dus geen regressie
+   daar. Lagere CSS-specificiteit dan de :fullscreen/.baanflow-pseudofullscreen-regels hierboven,
+   dus zodra de "Volledig scherm"-knop alsnog wordt gebruikt voor een nog iets grotere, edge-to-edge
+   weergave zonder balken, wint die staat gewoon zoals voorheen. Drempel op 600px (niet 768px): iPad
+   mini in portrait is al 744px breed en moet dit ook krijgen; de breedste telefoon in portrait
+   (incl. iPhone Pro Max) blijft ruim onder de 480px, dus 600px scheidt telefoon- van
+   tablet-breedtes schoon. */
+@media (min-width:600px){
+  #baanflowCard{
+    min-height:calc(100vh - var(--hh) - var(--nh) - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;justify-content:center}
+}
 .baanflowdetailoverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
   justify-content:center;padding:18px;z-index:50}
 .baanflowdetailmodal{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:420px;
@@ -1226,6 +1255,56 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 /* ================================================================================================
+   v1.13.3 (11 november 2026) — Baan Flow-kaart vult nu standaard het scherm op iPad/tablet, met de
+   app-header en onderste navigatiebalk gewoon zichtbaar (Kay's melding: "nog steeds niet goed", met
+   screenshot van de GEWONE, niet-volledig-scherm weergave op zijn iPad — veel ongebruikte crème-
+   kleurige ruimte onder de legenda, vóór de onderste navigatiebalk).
+
+   Onderzoek (bevestigd met Playwright-renders op 820×1180/portrait, 1180×820/landscape, 744×1133/
+   iPad-mini-portrait en 1440×900/desktop, niet aangenomen): de kaart zelf is aan een vaste, liggende
+   aspect-ratio gebonden (de baanfoto, ca. 1,47:1) en de witte kaart-sectie (#baanflowCard) kreeg
+   voorheen geen eigen hoogte — ze was precies zo hoog als haar inhoud (titel+subtekst+kaart+
+   legenda), en op een portrait-tablet is dat aanzienlijk minder dan de beschikbare ruimte tussen
+   header en navigatiebalk. Het overschot bleef kaal crème-kleurige paginaondergrond.
+
+   Eerst geprobeerd en weer teruggedraaid: de kaart zelf dezelfde min(breedte, hoogte-op-basis-van-
+   100vh)-formule geven als de bestaande volledig-scherm-staat. Bleek dubbel fout, empirisch
+   vastgesteld: (1) op een portrait-tablet is de kaart door haar aspect-ratio altijd al breedte-
+   gebonden, dus de hoogte-tak van die formule won daar sowieso nooit — geen enkel effect; (2) op een
+   laag/breed scherm (telefoon in landscape, bijv. 852×393) won de hoogte-tak juist wél en kneep de
+   kaart tot een piepklein postzegeltje, erger dan de oorspronkelijke eenvoudige width:100%-regel.
+
+   Uiteindelijke fix: de kaart zelf ongemoeid gelaten (blijft width:100%, aspect-ratio-afgeleide
+   hoogte — raakt de percentage-gebaseerde markerplaatsing in baanflowPuntVoor() niet aan). In
+   plaats daarvan krijgt #baanflowCard vanaf 600px breedte een minimumhoogte gelijk aan de volledige
+   resterende ruimte tussen header en onderste navigatiebalk (`calc(100vh - hh - nh - 28px -
+   env(safe-area-inset-*))`), met zijn inhoud verticaal gecentreerd (`display:flex;flex-direction:
+   column;justify-content:center`). De witte sectie vult nu altijd de beschikbare ruimte, de kaart
+   zelf staat gecentreerd in plaats van bovenaan geplakt met lege ruimte eronder. Omdat min-height
+   een ondergrens is, geen bovengrens, blijft een krap/laag scherm (zoals telefoon-landscape) gewoon
+   een normale, scrollbare sectie — geen regressie daar, bevestigd met een losse render.
+
+   Drempel bewust op 600px, niet 768px: iPad mini in portrait is al 744px breed en moet dit ook
+   krijgen; de breedste telefoon in portrait (incl. iPhone Pro Max) blijft ruim onder de 480px, dus
+   600px scheidt telefoon- van tablet-breedtes schoon, zonder een telefoon per ongeluk mee te nemen.
+   Telefoons (portrait én landscape) blijven dus op het oude gedrag — zij moeten nog steeds zelf op
+   "Volledig scherm" tikken voor de (native of pseudo-)fullscreen-weergave.
+
+   Zijdelings gevonden tijdens dit onderzoek, gemeld maar NIET aangepakt: de bestaande "Volledig
+   scherm"-knop/pseudofullscreen-modus (v1.13.0-v1.13.2) heeft op een portrait-tablet in de praktijk
+   HETZELFDE geometrische probleem — de fullscreen-CSS' eigen `min(100%, calc((100vh-170px)*ratio))`-
+   formule is daar óók altijd breedte-gebonden (bevestigd: op 820×1180 kwam er zowel in als buiten
+   fullscreen een kaart van ca. 760-790px breed/520px hoog uit) — de knop verbergt dus wel de app-
+   chrome, maar maakt de kaart zelf niet daadwerkelijk groter dan de nieuwe standaardweergave hierboven.
+   Nu de standaardweergave zelf al goed vult, is het praktische nut van de knop op tablet navenant
+   kleiner geworden (vooral nog: nog een beetje extra breedte/hoogte winnen door hh+nh niet meer te
+   hoeven reserveren). Niet in deze sessie aangepakt — nog niet aan Kay gevraagd of dat de moeite
+   waard is.
+
+   Versie 1.13.2 → 1.13.3 (patch — opmaakfix binnen bestaande functionaliteit, geen nieuwe schermen
+   of schemawijziging).
+   ================================================================================================ */
+/* ================================================================================================
    v1.13.2 (11 november 2026) — Volledig-scherm van de Baan Flow-kaart werkt nu ook op iPad/tablet
    (Kay's melding: de "Volledig scherm"-knop ontbrak/deed niets op zijn iPad).
 
@@ -1350,7 +1429,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
    trackersortering, tabblad-herindeling, Reglement-zichtbaarheid voor marshals) is intact.
    ================================================================================================ */
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.13.2';
+const APP_VERSIE = '1.13.3';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {

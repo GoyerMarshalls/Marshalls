@@ -34,7 +34,7 @@
 <meta name="copyright" content="© 2026 Vandelinde Consulting BV. Alle rechten voorbehouden.">
 <meta name="author" content="Vandelinde Consulting BV">
 <title>Goyer Marshals</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --gd:#1a5c35;--gm:#2d7a4f;--gl:#4a9c6c;--gp:#e1f5ee;
@@ -350,79 +350,75 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
   font-size:13px;font-weight:800;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);
   cursor:pointer;z-index:2}
 .baanflowmarker.houdtop{box-shadow:0 0 0 3px var(--magenta),0 2px 6px rgba(0,0,0,0.35)}
-.baanflowlegenda{display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:12px}
-.baanflowlegendaitem{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tl);font-weight:600}
+/* v1.13.5 (Kay's verzoek): de Baan Flow-kaart ziet er nu op elk scherm exact zo uit als in GoyerFlow
+   (iPad/tablet: smalle witte kaart in het midden, plus de volledig-scherm-weergave). De kleuren,
+   lettergroottes en kaartopmaak hieronder zijn daarom GoyerFlow's waarden, gescoped op #baanflowCard
+   zodat de rest van de app (eigen kleurvariabelen/lettertype) ongemoeid blijft. */
+#baanflowCard{--blue:#3E74A8;--gl:#1F4D36;--amber:#A85E1C;--red:#A33434;
+  font-family:'Inter',system-ui,sans-serif;color:#1B2B22;
+  background:#fff;border:1px solid #ECE7DA;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  padding:16px 18px;box-sizing:border-box;overflow:visible}
+@media (min-width:600px){
+  #baanflowCard{max-width:440px;margin-left:auto;margin-right:auto}
+}
+/* Legenda: altijd op ÉÉN rij (Kay's verzoek). nowrap + gelijkmatig verdeeld; op smallere schermen
+   iets kleinere letters/tussenruimte zodat alle vijf items (incl. Ophouder) passen. In volledig scherm
+   mag de legenda wel terugvallen op wrappen (zie de fullscreen-regels hieronder, 14px-letters). */
+.baanflowlegenda{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:12px 16px;margin-top:12px}
+.baanflowlegendaitem{display:flex;align-items:center;gap:6px;font-size:12px;color:#6B6558;font-weight:600;white-space:nowrap}
 .baanflowlegendadot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
 .baanflowlegendaring{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;
-  border:2px solid var(--tl);box-sizing:border-box}
+  border:2px solid #6B6558;box-sizing:border-box}
 .baanflowlegendaring.houdtop{border-color:var(--magenta)}
-.baanflowheader{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.baanflowsubtekst{font-size:.8rem;color:var(--tl);margin-top:6px}
-.baanflowfsbtn{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:6px 11px;
-  border-radius:9px;background:#fff;border:1px solid var(--cd);cursor:pointer;
-  font-size:12px;font-weight:700;color:var(--tl)}
-#baanflowCard:fullscreen, #baanflowCard:-webkit-full-screen, #baanflowCard.baanflow-pseudofullscreen{
-  background:var(--cr);border:none;border-radius:0;box-shadow:none;
-  display:flex;flex-direction:column;justify-content:center;
-  width:100vw;height:100vh;padding:28px;overflow:auto}
-/* .baanflow-pseudofullscreen (v1.13.2): CSS-gebaseerd fullscreen-alternatief voor apparaten waar de
-   browser-eigen Fullscreen API niet (betrouwbaar) werkt op een gewoon element — zie
-   baanflowToggleFullscreen hieronder. position:fixed i.p.v. op :fullscreen-elementen leunen, zodat
-   dit zonder enige API-ondersteuning werkt. */
-#baanflowCard.baanflow-pseudofullscreen{position:fixed;inset:0;z-index:400}
-#baanflowCard:fullscreen .baanflowkaartwrap, #baanflowCard:-webkit-full-screen .baanflowkaartwrap,
-#baanflowCard.baanflow-pseudofullscreen .baanflowkaartwrap{
-  /* v1.13.2: width nu begrensd op min(100%, ...) i.p.v. onvoorwaardelijk uit de schermhoogte
-     afgeleid — op een liggend/breed scherm (desktop) is hoogte de beperkende maat, zoals voorheen,
-     maar op een staand/smal scherm (iPad in portrait, telefoon) zou calc((100vh-170px)*ratio) breder
-     worden dan het scherm en de kaart dus horizontaal laten afsnijden. height:auto laat de
-     aspect-ratio (al als CSS-property op dit element gezet, zie renderBaanFlow) de hoogte uit de
-     uiteindelijke breedte afleiden, in beide gevallen correct. */
-  width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));height:auto;
-  align-self:center;margin-top:10px}
-#baanflowCard:fullscreen .baanflowheader, #baanflowCard:-webkit-full-screen .baanflowheader,
-#baanflowCard.baanflow-pseudofullscreen .baanflowheader,
-#baanflowCard:fullscreen .baanflowsubtekst, #baanflowCard:-webkit-full-screen .baanflowsubtekst,
-#baanflowCard.baanflow-pseudofullscreen .baanflowsubtekst,
-#baanflowCard:fullscreen .baanflowlegenda, #baanflowCard:-webkit-full-screen .baanflowlegenda,
-#baanflowCard.baanflow-pseudofullscreen .baanflowlegenda{
-  width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));align-self:center}
-#baanflowCard:fullscreen .baanflowlegendaitem, #baanflowCard:-webkit-full-screen .baanflowlegendaitem,
-#baanflowCard.baanflow-pseudofullscreen .baanflowlegendaitem{
-  font-size:14px}
-#baanflowCard:fullscreen .baanflowmarker, #baanflowCard:-webkit-full-screen .baanflowmarker,
-#baanflowCard.baanflow-pseudofullscreen .baanflowmarker{
-  width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));
-  font-size:clamp(13px,1.3vw,24px)}
-/* Tablet/desktop (11 november 2026, vervolg 4) — Kay's vraag: "waarom niet gewoon standaard
-   volledig scherm op een iPad/tablet, maar dan wel met de top- en bodem-menubalken zichtbaar?".
-   Eerst geprobeerd (en weer teruggedraaid, zie claude/bouwgeschiedenis-marshal-app.md): de kaart
-   zelf dezelfde min(breedte, hoogte-op-basis-van-100vh)-formule geven als de volledig-scherm-staat
-   hierboven. Bleek dubbel fout: (1) op een staand/smal scherm (portrait-tablet) is de kaart door
-   zijn vaste, liggende aspect-ratio (ca. 1,47:1) altijd al breedte-gebonden — ook 100% van de
-   beschikbare breedte geeft dan een relatief lage kaart; de hoogte-tak van die formule won daar
-   dus nooit, en de regel deed in de praktijk niets. (2) op een laag/breed scherm (telefoon in
-   landscape, bijv. 852×393) won de hoogte-tak juist wél, en kneep de kaart tot een piepklein
-   postzegeltje — minder bruikbaar dan de oorspronkelijke, simpele width:100%-regel. De kaart zelf
-   dus ongemoeid gelaten (blijft width:100%, hoogte volgt uit zijn vaste aspect-ratio — raakt de
-   percentage-gebaseerde markerplaatsing in baanflowPuntVoor niet). In plaats daarvan alleen
-   #baanflowCard (de witte kaart-kaart, dus de hele omlijnde sectie) laten groeien tot de volledige
-   resterende ruimte tussen header en onderste navigatiebalk, met zijn inhoud verticaal gecentreerd.
-   Resultaat: één grote, witte sectie die de hele beschikbare ruimte vult (geen kaal crème-kleurige
-   lege strook meer onder de legenda op een portrait-tablet, zie Kay's screenshot), met de kaart
-   zelf gecentreerd i.p.v. bovenaan geplakt — en op een krap/laag scherm blijft het gewoon een
-   normale, scrollbare sectie (min-height is een ondergrens, geen bovengrens), dus geen regressie
-   daar. Lagere CSS-specificiteit dan de :fullscreen/.baanflow-pseudofullscreen-regels hierboven,
-   dus zodra de "Volledig scherm"-knop alsnog wordt gebruikt voor een nog iets grotere, edge-to-edge
-   weergave zonder balken, wint die staat gewoon zoals voorheen. Drempel op 600px (niet 768px): iPad
-   mini in portrait is al 744px breed en moet dit ook krijgen; de breedste telefoon in portrait
-   (incl. iPhone Pro Max) blijft ruim onder de 480px, dus 600px scheidt telefoon- van
-   tablet-breedtes schoon. */
-@media (min-width:600px){
-  #baanflowCard{
-    min-height:calc(100vh - var(--hh) - var(--nh) - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;justify-content:center}
+@media (max-width:480px){
+  .baanflowlegenda{justify-content:space-between;gap:6px 6px}
+  .baanflowlegendaitem{font-size:clamp(9px, calc((100vw - 110px) * 0.034), 12px);gap:4px}
+  .baanflowlegendadot,.baanflowlegendaring{width:8px;height:8px}
 }
+/* Op een scherm smaller dan 360px (komt vrijwel niet meer voor) is één rij niet meer leesbaar te
+   krijgen: dan valt de legenda terug op wrappen. */
+@media (max-width:359px){
+  .baanflowlegenda{flex-wrap:wrap;justify-content:flex-start;gap:6px 10px}
+}
+.baanflowheader{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.baanflowheader .eyebrow{font-size:12px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:#1B2B22;margin:0}
+.baanflowsubtekst{font-size:14px;color:#6B6558;line-height:1.45;margin:0 0 4px 0}
+.baanflowfsbtn{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:6px 11px;
+  border-radius:9px;background:#fff;border:1px solid #ECE7DA;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:700;color:#6B6558}
+/* Volledig scherm. v1.13.5: elke selector (:fullscreen, :-webkit-full-screen, .baanflow-pseudofullscreen)
+   staat bewust in een EIGEN regel, niet in één selectorlijst: een browser die één selector uit een
+   lijst niet kent (Safari < 16.4 kent :fullscreen niet) verwerpt de héle regel — en juist op die
+   toestellen is de CSS-terugval (.baanflow-pseudofullscreen) nodig. (Zelfde les als GoyerFlow v0.23.4.)
+   De breedte volgt min(100%, uit-de-hoogte-afgeleide-breedte), zie claude/bouwgeschiedenis-marshal-app.md
+   (v1.13.2). Markers schalen mee via clamp(). */
+#baanflowCard:fullscreen{background:#F7F5EF;border:none;border-radius:0;box-shadow:none;display:flex;flex-direction:column;justify-content:center;width:100vw;height:100vh;max-width:none;margin:0;padding:28px;overflow:auto;box-sizing:border-box}
+#baanflowCard:fullscreen .baanflowkaartwrap{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));height:auto;align-self:center;margin-top:10px}
+#baanflowCard:fullscreen .baanflowheader,
+#baanflowCard:fullscreen .baanflowsubtekst,
+#baanflowCard:fullscreen .baanflowlegenda{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));align-self:center}
+#baanflowCard:fullscreen .baanflowheader .eyebrow{font-size:15px}
+#baanflowCard:fullscreen .baanflowlegenda{flex-wrap:wrap;justify-content:flex-start;gap:12px 16px}
+#baanflowCard:fullscreen .baanflowlegendaitem{font-size:14px;gap:6px}
+#baanflowCard:fullscreen .baanflowmarker{width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));font-size:clamp(13px,1.3vw,24px)}
+#baanflowCard:-webkit-full-screen{background:#F7F5EF;border:none;border-radius:0;box-shadow:none;display:flex;flex-direction:column;justify-content:center;width:100vw;height:100vh;max-width:none;margin:0;padding:28px;overflow:auto;box-sizing:border-box}
+#baanflowCard:-webkit-full-screen .baanflowkaartwrap{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));height:auto;align-self:center;margin-top:10px}
+#baanflowCard:-webkit-full-screen .baanflowheader,
+#baanflowCard:-webkit-full-screen .baanflowsubtekst,
+#baanflowCard:-webkit-full-screen .baanflowlegenda{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));align-self:center}
+#baanflowCard:-webkit-full-screen .baanflowheader .eyebrow{font-size:15px}
+#baanflowCard:-webkit-full-screen .baanflowlegenda{flex-wrap:wrap;justify-content:flex-start;gap:12px 16px}
+#baanflowCard:-webkit-full-screen .baanflowlegendaitem{font-size:14px;gap:6px}
+#baanflowCard:-webkit-full-screen .baanflowmarker{width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));font-size:clamp(13px,1.3vw,24px)}
+#baanflowCard.baanflow-pseudofullscreen{background:#F7F5EF;border:none;border-radius:0;box-shadow:none;display:flex;flex-direction:column;justify-content:center;position:fixed;inset:0;z-index:400;width:auto;height:auto;max-width:none;margin:0;padding:28px;overflow:auto;box-sizing:border-box}
+#baanflowCard.baanflow-pseudofullscreen .baanflowkaartwrap{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));height:auto;align-self:center;margin-top:10px}
+#baanflowCard.baanflow-pseudofullscreen .baanflowheader,
+#baanflowCard.baanflow-pseudofullscreen .baanflowsubtekst,
+#baanflowCard.baanflow-pseudofullscreen .baanflowlegenda{width:min(100%, calc((100vh - 170px) * var(--baanflow-wrap-ratio)));align-self:center}
+#baanflowCard.baanflow-pseudofullscreen .baanflowheader .eyebrow{font-size:15px}
+#baanflowCard.baanflow-pseudofullscreen .baanflowlegenda{flex-wrap:wrap;justify-content:flex-start;gap:12px 16px}
+#baanflowCard.baanflow-pseudofullscreen .baanflowlegendaitem{font-size:14px;gap:6px}
+#baanflowCard.baanflow-pseudofullscreen .baanflowmarker{width:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));height:calc(clamp(30px,3.2vw,64px) * var(--kp-schaal,1));font-size:clamp(13px,1.3vw,24px)}
 .baanflowdetailoverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
   justify-content:center;padding:18px;z-index:50}
 .baanflowdetailmodal{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:420px;
@@ -1102,17 +1098,17 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
     <div class="panel hidden" id="panelBaanFlow">
       <div class="card" id="baanflowCard">
         <div class="baanflowheader">
-          <div class="sl">Baan Flow</div>
+          <div class="eyebrow">Baan Flow</div>
           <button id="baanflowFsBtn" class="baanflowfsbtn" type="button" onclick="baanflowToggleFullscreen()"></button>
         </div>
         <p class="baanflowsubtekst" id="baanflowSubtekst"></p>
         <div class="baanflowkaartwrap" id="baanflowKaartWrap"></div>
         <div class="baanflowlegenda">
-          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--blue)"></span>Voor op schema</span>
+          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--blue)"></span>Snel</span>
           <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--gl)"></span>Op schema</span>
-          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--amber)"></span>Iets achter</span>
-          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--red)"></span>Ver achter</span>
-          <span class="baanflowlegendaitem"><span class="baanflowlegendaring houdtop"></span>Ophouder (groter icoon = grotere vertraging die hij veroorzaakt)</span>
+          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--amber)"></span>Langzaam</span>
+          <span class="baanflowlegendaitem"><span class="baanflowlegendadot" style="background:var(--red)"></span>Traag</span>
+          <span class="baanflowlegendaitem"><span class="baanflowlegendaring houdtop"></span>Ophouder</span>
         </div>
       </div>
     </div>
@@ -1254,6 +1250,63 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 </div>
 
 <script>
+/* ================================================================================================
+   v1.13.5 (11 november 2026) — Baan Flow-weergave nu exact gelijk aan GoyerFlow (iPad/tablet), en de
+   legenda staat op één rij.
+
+   Kay's verzoek, met screenshots van GoyerFlow v0.23.4 (kleine kaartweergave + volledig scherm): "Ik wil
+   precies dezelfde views voor de Marshal app", en: "verwijder uitleg tekst tussen haakjes na Ophouder;
+   zorg dat Ophouder op dezelfde horizontale rij staat als de andere legenda items, ook in kleine
+   kaart view."
+   - Kleine weergave: de kaart is nu, zoals in GoyerFlow, een smalle witte kaart van max. 440px breed,
+     gecentreerd (vanaf 600px schermbreedte), met GoyerFlow's afronding/rand/schaduw/opvulling, Inter als
+     lettertype (nu mee geladen), kopje "BAAN FLOW" (12px, vet, hoofdletters), ondertitel van 14px en een
+     "Volledig scherm"-knop met pictogram. VERVANGT de v1.13.3-weergave (kaart groeit tot de volledige
+     hoogte tussen header en navigatiebalk) — Kay koos expliciet voor de GoyerFlow-weergave.
+   - Kleuren van de markers/legenda binnen de kaart zijn nu GoyerFlow's (blauw #3E74A8, donkergroen,
+     oranje, rood), gescoped op #baanflowCard zodat de rest van de app zijn eigen kleuren houdt.
+   - Legenda-labels gelijkgetrokken met GoyerFlow: Snel / Op schema / Langzaam / Traag / Ophouder
+     (voorheen Voor op schema / Op schema / Iets achter / Ver achter). De detailpopup per flight is niet
+     aangepast.
+   - Ophouder: de tekst "(groter icoon = grotere vertraging die hij veroorzaakt)" is verwijderd.
+   - Legenda altijd op één rij in de kleine weergave: nowrap, en op smallere schermen (<= 480px) een
+     letter-/ruimteschaal die meeloopt met de breedte (getest 360-560px: één rij, geen overloop). Onder
+     360px (komt vrijwel niet voor) valt hij terug op wrappen — één rij is daar niet leesbaar te krijgen.
+   - Volledig scherm: CSS opnieuw opgebouwd zoals GoyerFlow v0.23.4 — elke selector (:fullscreen,
+     :-webkit-full-screen, .baanflow-pseudofullscreen) in een EIGEN regel. De eerdere gecombineerde
+     selectorlijst werd door Safari < 16.4 (kent :fullscreen niet) in zijn geheel verworpen, juist op de
+     toestellen waarvoor de CSS-terugval bedoeld is; de Chromium-tests konden dat niet laten zien.
+     Titel 15px, legenda links uitgelijnd in volledig scherm (wrapt daar nog wel indien nodig).
+   ================================================================================================ */
+/* ================================================================================================
+   v1.13.4 (11 november 2026) — De app toont en rekent nu ALTIJD op Nederlandse tijd (Europe/Amsterdam),
+   ongeacht de tijdzone van het apparaat.
+
+   Aanleiding (Kay, vanuit Portugal, WET = UTC+0): de Tracker toonde "Geen actieve flights op dit
+   moment" terwijl er wel flights liepen. Oorzaak: starttijden staan als Amsterdamse wandkloktijd in
+   de database (flights.datum/starttijd, bijv. '09:04:00'), maar werden vergeleken met de klok van
+   het APPARAAT (nu.getHours()). Op een apparaat één uur achter liep de app dus een uur "te vroeg":
+   de flights van 09:04/09:12 vielen buiten het actief/aankomend-venster. Database en sync waren
+   correct (gecontroleerd); reproductie in headless Chromium met timezone_id 'UTC' bevestigde het
+   mechanisme.
+
+   Aanpak: een Amsterdam-laag bovenaan het script.
+   - Date.prototype.getFullYear/getMonth/getDate/getDay/getHours/getMinutes/getSeconds geven nu de
+     Amsterdamse waarden (via Intl.DateTimeFormat met timeZone 'Europe/Amsterdam' — zomer-/wintertijd
+     gaat dus vanzelf goed), en toLocaleDateString/TimeString/String gebruiken standaard
+     timeZone 'Europe/Amsterdam' (tenzij de aanroeper zelf een timeZone meegeeft).
+   - amsVandaag(): Amsterdamse datum 'YYYY-MM-DD' — vervangt `new Date().toISOString().split('T')[0]`
+     (UTC-datum, dus tussen 00:00 en 01:00/02:00 Amsterdamse tijd een dag achter).
+   - amsMinutenSindsMiddernacht(): vervangt `(Date.now() - new Date().setHours(0,0,0,0))/60000`.
+   - amsWandklok(datum, tijd): Amsterdamse wandkloktijd -> absoluut tijdstip (voor
+     slotDatumTijd, de dienstvenster-berekening).
+   - Seizoenstart (1 april) nu op 12:00 i.p.v. middernacht, zodat de datum niet verspringt.
+
+   Bekende beperking: setters (setDate/setMonth/setHours) en Date-constructors met losse onderdelen
+   blijven apparaat-lokaal. Zolang de datum op de middag (12:00) wordt opgebouwd — zoals deze app
+   overal doet — geeft dat voor Europese tijdzones geen verschil. Voor zones ver buiten Europa
+   (bijv. Australië) kunnen rond middernacht randgevallen blijven.
+   ================================================================================================ */
 /* ================================================================================================
    v1.13.3 (11 november 2026) — Baan Flow-kaart vult nu standaard het scherm op iPad/tablet, met de
    app-header en onderste navigatiebalk gewoon zichtbaar (Kay's melding: "nog steeds niet goed", met
@@ -1428,8 +1481,53 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
    v1.11.00 t/m v1.12.01-functionaliteit (Streeftijden-rekenmodel, Hole X/Y-weergave,
    trackersortering, tabblad-herindeling, Reglement-zichtbaarheid voor marshals) is intact.
    ================================================================================================ */
+// ─── AMSTERDAMSE TIJD (v1.13.4) ───────────────────────────
+// Alle tijden in deze app zijn Nederlandse tijden, ongeacht de tijdzone van het apparaat.
+const AMS_TZ = 'Europe/Amsterdam';
+const _amsFmt = new Intl.DateTimeFormat('en-GB', {timeZone:AMS_TZ, hourCycle:'h23', weekday:'short',
+  year:'numeric', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', second:'numeric'});
+const _amsDagIdx = {Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6};
+let _amsCacheSec = null, _amsCacheVal = null;
+function _amsDelen(d){
+  const t = Date.prototype.getTime.call(d);
+  if(isNaN(t)) return null;
+  const sec = Math.floor(t/1000);
+  if(sec === _amsCacheSec) return _amsCacheVal;
+  const o = {};
+  _amsFmt.formatToParts(new Date(sec*1000)).forEach(p => { o[p.type] = p.value; });
+  _amsCacheVal = {jaar:+o.year, maand:+o.month, dag:+o.day, uur:+o.hour, min:+o.minute, sec:+o.second, wd:_amsDagIdx[o.weekday]};
+  _amsCacheSec = sec;
+  return _amsCacheVal;
+}
+[['getFullYear','jaar',0],['getMonth','maand',-1],['getDate','dag',0],['getDay','wd',0],
+ ['getHours','uur',0],['getMinutes','min',0],['getSeconds','sec',0]].forEach(([naam, veld, corr]) => {
+  Date.prototype[naam] = function(){ const p = _amsDelen(this); return p ? p[veld] + corr : NaN; };
+});
+['toLocaleDateString','toLocaleTimeString','toLocaleString'].forEach(naam => {
+  const orig = Date.prototype[naam];
+  Date.prototype[naam] = function(loc, opt){ return orig.call(this, loc, Object.assign({timeZone:AMS_TZ}, opt||{})); };
+});
+function _amsPad2(n){ return String(n).padStart(2,'0'); }
+// Amsterdamse datum van nu, 'YYYY-MM-DD'
+function amsVandaag(){ const p = _amsDelen(new Date()); return p.jaar+'-'+_amsPad2(p.maand)+'-'+_amsPad2(p.dag); }
+// Minuten (met decimalen) sinds Amsterdamse middernacht
+function amsMinutenSindsMiddernacht(){
+  const nu = new Date(), p = _amsDelen(nu);
+  return p.uur*60 + p.min + (p.sec + (nu.getTime() % 1000)/1000)/60;
+}
+// Amsterdamse wandkloktijd ('YYYY-MM-DD', 'HH:MM[:SS]') -> absoluut tijdstip (Date)
+function amsWandklok(datum, tijd){
+  const dp = datum.split('-').map(Number), tp = (tijd||'00:00:00').split(':').map(Number);
+  const gok = Date.UTC(dp[0], dp[1]-1, dp[2], tp[0]||0, tp[1]||0, tp[2]||0);
+  const offsetOp = t => { const q = _amsDelen(new Date(t));
+    return Date.UTC(q.jaar, q.maand-1, q.dag, q.uur, q.min, q.sec) - Math.floor(t/1000)*1000; };
+  let t = gok - offsetOp(gok);
+  t = gok - offsetOp(t);
+  return new Date(t);
+}
+
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.13.3';
+const APP_VERSIE = '1.13.5';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -1726,7 +1824,7 @@ function uitloggen(){
 async function laadVerzoeken(){
   try {
     const nu = new Date();
-    const vandaag = nu.toISOString().split('T')[0];
+    const vandaag = amsVandaag();
     // Na 22:00 geen verzoeken meer tonen
     if(nu.getHours() >= 22){
       renderVerzoekenLijst([]);
@@ -1784,7 +1882,7 @@ async function laadVerzoekVoorMarshal(){
   try {
     const nu = new Date();
     if(nu.getHours() >= 22){ renderVerzoekMarshal([]); return; }
-    const vandaag = nu.toISOString().split('T')[0];
+    const vandaag = amsVandaag();
     const verzoeken = await sbG('verzoeken',
       'select=*&marshal_id=eq.'+huidigeMarshalId+'&aangemaakt_at=gte.'+vandaag+'T00:00:00&status=neq.geregeld&order=aangemaakt_at.desc'
     );
@@ -1877,7 +1975,7 @@ async function openVerzoekFormulier(){
   document.getElementById('verzoekInvoer').classList.remove('hidden');
   document.getElementById('verzoekTekst').value = '';
   const now = new Date();
-  const vandaag = now.toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   const nuTijd = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   const infoEl = document.getElementById('verzoekMarshalInfo');
   try {
@@ -2639,7 +2737,7 @@ function showPanel(naam){
 // ─── HOME ─────────────────────────────────────────────────
 async function laadHome(){
   try {
-    const vandaag=new Date().toISOString().split('T')[0];
+    const vandaag=amsVandaag();
     const meldingen = await sbG('meldingen',
       'select=id,type,hole,actie,notities,created_at,marshal_id,marshals(naam)&order=created_at.desc&created_at=gte.'+vandaag+'T00:00:00&limit=20'
     );
@@ -2667,7 +2765,7 @@ async function laadHome(){
   if(isCaddymaster){ laadCaddymasterHome(); }
   // Dienst check — alleen voor banner logica, knop wordt nooit getoond
   if(huidigeMarshalId && !isAdmin && !isCaddymaster){
-    const vandaag = new Date().toISOString().split('T')[0];
+    const vandaag = amsVandaag();
     const slots = await sbG('dienst_slots','select=id&datum=eq.'+vandaag);
     const slotIds = (slots||[]).map(s=>s.id);
     if(slotIds.length){
@@ -2681,7 +2779,7 @@ async function laadVoorzitterHome(){
   // Niet verversen als er een edit open staat
   if(document.querySelector('[id^="vhMeldEdit_"][style*="display:block"],[id^="alleMeldEdit_"][style*="display:block"]')) return;
   try {
-    const vandaag = new Date().toISOString().split('T')[0];
+    const vandaag = amsVandaag();
     const datumEl = document.getElementById('vhBezettingDatum');
     if(datumEl) datumEl.textContent = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const slots = await sbG('dienst_slots', 'select=id,datum,start_tijd,eind_tijd&datum=eq.'+vandaag);
@@ -3046,7 +3144,7 @@ function renderDienstenBehoudScroll(){
 }
 
 function renderDiensten(){
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   let slots = alleSlots;
   if(dienstView === 'mijn') slots = slots.filter(s => alleBoekingen.has(s.id));
 
@@ -3348,7 +3446,7 @@ let weekGridMaandag = null;
 function verschuifWeek(richting){
   if(!weekGridMaandag) return;
   weekGridMaandag.setDate(weekGridMaandag.getDate() + (richting*7));
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   renderWeekGrid(alleSlots, vandaag);
 }
 
@@ -3681,7 +3779,7 @@ function bevestigDienstAfronden(){
 }
 
 async function toonDienstRapport(){
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   const seizoenStart = new Date().getFullYear()+'-04-01';
   try {
     const [meldingen, updates, boekingen] = await Promise.all([
@@ -3721,7 +3819,7 @@ async function toonDienstRapport(){
     for(let d = new Date(startMaand); d <= nu; d.setMonth(d.getMonth()+1)){
       const sleutel = d.toISOString().slice(0,7);
       const n = telPerMaand[sleutel]||0;
-      const isHuidig = sleutel === nu.toISOString().slice(0,7);
+      const isHuidig = sleutel === amsVandaag().slice(0,7);
       const kleur = n >= 2 ? 'var(--gl)' : n === 1 ? '#d4a057' : 'var(--red)';
       const label = maandNamen[d.getMonth()];
       maandHtml.push(`<div style="text-align:center">
@@ -3949,7 +4047,7 @@ async function slaaProfiel(){
 // ─── PROFIEL OVERLAYS ─────────────────────────────────────
 async function toonDienstRapportVoorDatum(datum){
   const seizoenStart = new Date().getFullYear()+'-04-01';
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   const dt = new Date(datum+'T12:00:00');
   const dagStr = dt.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   try {
@@ -4070,7 +4168,7 @@ async function toonGeboekteDiensten(){
     const boekingen = await sbG('dienst_boekingen',
       'select=slot_id,dienst_slots(datum,start_tijd,eind_tijd)&marshal_id=eq.'+huidigeMarshalId+'&order=dienst_slots(datum).desc'
     );
-    const vandaag = new Date().toISOString().split('T')[0];
+    const vandaag = amsVandaag();
     const lijst = (boekingen||[]).filter(b=>b.dienst_slots);
 
     // Groepeer per datum
@@ -4237,7 +4335,7 @@ async function laadAdmin(){
   if(voorzitterBlok) voorzitterBlok.style.display = isAdmin ? '' : 'none';
   try {
     const seizoenStart = new Date().getFullYear()+'-04-01';
-    const vandaag = new Date().toISOString().split('T')[0];
+    const vandaag = amsVandaag();
 
     const [marshals,meldingen,slots,alleBoekingen]=await Promise.all([
       sbG('marshals','select=*&actief=eq.true&order=naam.asc'),
@@ -4297,7 +4395,7 @@ function laadDienstFrequentie(marshals, alleBoekingen){
   if(!el) return;
 
   const nu = new Date();
-  const seizoenStart = new Date(nu.getFullYear(), 3, 1); // 1 april
+  const seizoenStart = new Date(nu.getFullYear(), 3, 1, 12); // 1 april, 12:00 (middag: datum verspringt niet)
   const maanden = (nu.getFullYear() - seizoenStart.getFullYear()) * 12 + nu.getMonth() - seizoenStart.getMonth() + 1;
 
   if(periodeEl) periodeEl.textContent = 'apr – '+nu.toLocaleDateString('nl-NL',{month:'short'})+' '+nu.getFullYear();
@@ -4338,7 +4436,7 @@ function laadDienstFrequentie(marshals, alleBoekingen){
 
   // Tel boekingen per marshal — alleen t/m vandaag
   const telPerMarshal = {};
-  const vandaagStr = nu.toISOString().split('T')[0];
+  const vandaagStr = amsVandaag();
   (alleBoekingen||[]).forEach(b => {
     if(!b.marshal_id) return;
     const datum = b.dienst_slots?.datum;
@@ -4670,7 +4768,7 @@ function marshalBerekenFlightPositie(f, nu){
   // Eigen, bewust GEDUPLICEERDE kopie van flightStatus()'s isKlaar-IIFE (hierboven) — flightStatus()
   // zelf blijft ongewijzigd (zie het commentaarblok hierboven).
   const isKlaarOpTijd = !!f.klaar || (() => {
-    const nuMinMidnight = (Date.now() - new Date().setHours(0,0,0,0))/60000;
+    const nuMinMidnight = amsMinutenSindsMiddernacht();
     const startMinOfDag = parseInt((f.starttijd||'00:00').split(':')[0])*60 + parseInt((f.starttijd||'00:00').split(':')[1]);
     return nuMinMidnight >= startMinOfDag + verwachteRondetijd(f);
   })();
@@ -4852,7 +4950,7 @@ function marshalBaanflowIsZichtbaar(positie) {
 let baanflowInterval = null;
 
 async function laadBaanFlow(){
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   baanflowAttachFullscreenListener();
   try {
     const flights = await sbG('flights', 'select=*&datum=eq.'+vandaag+'&order=starttijd.asc');
@@ -5004,6 +5102,19 @@ function baanflowToggleFullscreen() {
     baanflowActiveerPseudoFullscreen(kaartEl);
   }
 }
+// Volledig-scherm-icoon (v1.13.5) — zelfde pictogram als GoyerFlow (vier pijlpunten naar de hoeken
+// resp. naar het midden).
+function baanflowFullscreenSvg(actief) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '14'); svg.setAttribute('height', '14'); svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'currentColor');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', actief
+    ? 'M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z'
+    : 'M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z');
+  svg.appendChild(path);
+  return svg;
+}
 function baanflowFullscreenKnopBijwerken() {
   const btn = document.getElementById('baanflowFsBtn');
   if (!btn) return;
@@ -5011,7 +5122,9 @@ function baanflowFullscreenKnopBijwerken() {
   // kan doen, ook zonder Fullscreen-API-ondersteuning — anders dan vóór v1.13.2.
   btn.classList.remove('hidden');
   const actief = baanflowIsFullscreen();
-  btn.textContent = actief ? '⤡ Scherm verlaten' : '⤢ Volledig scherm';
+  btn.innerHTML = '';
+  btn.appendChild(baanflowFullscreenSvg(actief));
+  btn.appendChild(document.createTextNode(actief ? ' Scherm verlaten' : ' Volledig scherm'));
   btn.title = actief ? 'Volledig scherm verlaten' : 'Kaart op volledig scherm tonen';
 }
 let baanflowFsListenerAangesloten = false;
@@ -5079,7 +5192,7 @@ let trackerVensterInterval = null;
 // dienst B) tellen als één blok. Geldt niet voor caddymaster/voorzitter —
 // dit is een UI-restrictie (nav-tab + panel), geen data-beveiliging.
 function slotDatumTijd(datum, tijd){
-  return new Date(datum+'T'+tijd.slice(0,8));
+  return amsWandklok(datum, tijd.slice(0,8));
 }
 
 async function berekenTrackerZichtbaarVoorMarshal(){
@@ -5307,7 +5420,7 @@ function verwachteHoleTheorie(f){
 
 function flightStatus(f){
   const isKlaar = f.klaar || (() => {
-    const nuMin = (Date.now() - new Date().setHours(0,0,0,0))/60000;
+    const nuMin = amsMinutenSindsMiddernacht();
     const startMin = parseInt((f.starttijd||'00:00').split(':')[0])*60 + parseInt((f.starttijd||'00:00').split(':')[1]);
     return nuMin >= startMin + verwachteRondetijd(f);
   })();
@@ -5324,7 +5437,7 @@ function flightStatus(f){
 }
 
 async function laadTracker(){
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   document.getElementById('trackerDatum').textContent = vandaag;
   const _udp = document.getElementById('uploadDatumPill'); if(_udp) _udp.textContent = vandaag;
 
@@ -6067,7 +6180,7 @@ async function verwerkCSVUpload(input){
     byFlight[key].geslachten.push(geslacht);
   });
 
-  const vandaag = new Date().toISOString().split('T')[0];
+  const vandaag = amsVandaag();
   const flightLijst = Object.values(byFlight);
 
   if(!flightLijst.length){
@@ -6576,9 +6689,9 @@ async function genereerRapport(){
   if(btn){ btn.textContent = '\u23f3 Rapport genereren...'; btn.disabled = true; }
   try {
     const nu = new Date();
-    const vanafDt = new Date(nu); vanafDt.setDate(vanafDt.getDate() - 6);
+    const vanafDt = new Date(amsVandaag()+'T12:00:00'); vanafDt.setDate(vanafDt.getDate() - 6);
     const vanaf = vanafDt.toISOString().split('T')[0];
-    const tot = nu.toISOString().split('T')[0];
+    const tot = amsVandaag();
     const [meldingen, slots, boekingen] = await Promise.all([
       sbG('meldingen', 'select=*,marshals(naam)&created_at=gte.'+vanaf+'T00:00:00&order=created_at.asc'),
       sbGAll('dienst_slots', 'select=id,datum,start_tijd,eind_tijd&datum=gte.'+vanaf+'&datum=lte.'+tot+'&order=datum.asc'),

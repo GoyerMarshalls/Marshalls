@@ -1263,6 +1263,44 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 /* ================================================================================================
+   v1.14.3 (11 november 2026) — weergave ronde (gelijk aan GoyerFlow v0.24.3): Tracker-rijen (actief en
+   aankomend) en beide flight-popups tonen "🕐 [starttijd] · [aantal] holes vanaf hole [starthole]" (bijv.
+   "🕐 11:52 · 18 holes vanaf hole 10") i.p.v. "Hole 9/18" resp. "Start · Hole 7 · 18 holes" (Kay: "Hole 9/18" las bij
+   een flight die op hole 10 start als "pas 9 holes"). Het actuele holenummer staat al in het cijferbolletje/de
+   stepper. Statustekst blijft in de actieve rij. Alleen weergave. Nieuw: marshalRondeTekst().
+   ============================================================================================ */
+/* ================================================================================================
+   v1.14.2 (11 november 2026) — FIX op v1.14.0 (gelijk aan GoyerFlow v0.24.2): marshalBegrensInhalen() sloeg
+   flights over die volgens het schema al voltooid waren, waardoor een snelle flight als "klaar" kon verdwijnen
+   terwijl eerder gestarte flights nog op hun laatste hole liepen. Nu geldt "niet voorbijgaan" ook bij de finish.
+   Handmatig klaar gemelde flights (f.klaar) en flights met melding blijven ongemoeid.
+   ============================================================================================ */
+/* ================================================================================================
+   v1.14.1 (11 november 2026) — knelpunt-teksten voorzichtiger en zonder getallen (gelijk aan GoyerFlow v0.24.1).
+   Kay: elke positie is een schatting, dus altijd "mogelijk", ook bij verse meldingen (een grens voor "recent" zou
+   een nieuwe verzonnen constante zijn). Popup en hovertekst: "Wordt mogelijk opgehouden door de flight ervoor" /
+   "Houdt mogelijk de flight achter zich op". Gat in minuten en trendtekst uit de tekst gehaald (bij een door
+   marshalBegrensInhalen() begrensde flight is het gat de technische 1 minuut = schijnnauwkeurigheid); de
+   trendpijl op de kaart blijft. De formuleringen zijn tegelijk gelijkgetrokken met GoyerFlow. Patch: alleen teksten.
+   ============================================================================================ */
+/* ================================================================================================
+   v1.14.0 (11 november 2026) — Baan Flow: een flight zonder melding mag niet voorbij een eerder gestarte
+   flight "schema-lopen" + sortering Tracker op zelfde hole gecorrigeerd (gelijk aan GoyerFlow v0.24.0).
+   Aanleiding (GoyerFlow-screenshot, Kay): Gonggrijp (2-bal, start 12:00) stond op hole 7, Haan (3-bal, 11:52)
+   op hole 6 — een 2-bal heeft een kortere schema-rondetijd, dus het schema laat hem Haan inhalen, wat op de
+   baan niet kan. Daarnaast stond bij gelijke hole de EERDER gestarte flight bovenaan (11:36 boven 11:44),
+   terwijl de later gestarte flight verder achteraan zit.
+   - marshalBegrensInhalen(): voor flights zonder melding wordt de positie op de Baan Flow-kaart begrensd tot
+     1 minuut (MARSHAL_INHAAL_MIN_GAT_MINUTEN, niet bevestigd) achter de dichtstbijzijnde eerder gestarte flight
+     die nog loopt (zelfde start hole 1/10). Flights met melding worden nooit begrensd. De begrensde flight
+     krijgt een herberekende eigen conclusie (achter op schema) en de tekst "(geschat: vlak achter de flight
+     ervoor)"; via de bestaande knelpunten-analyse kan de flight ervoor een Ophouder-ring krijgen. Dat is
+     bedoeld als signaal om te gaan kijken; een melding zet de flight op zijn echte plek.
+   - Tracker-lijst: bij gelijke hole staat de later gestarte (actieve) flight nu bovenaan.
+   BEPERKING: de Tracker-lijst zelf (verwachteHoleNu, hele holes) wordt NIET begrensd; daar kan een snelle
+   2-bal nog steeds een hogere hole tonen dan een eerder gestarte 3-bal. Alleen de Baan Flow-kaart is begrensd.
+   ============================================================================================ */
+/* ================================================================================================
    v1.13.6 (11 november 2026) — Baan Flow-kaart: inzoomen, en "Volledig scherm" verborgen op een telefoon in
    staande stand (gelijk aan GoyerFlow v0.23.7).
    Kay's verzoeken, met een iPhone-screenshot van GoyerFlow: waarom staat Volledig scherm ook op de iPhone,
@@ -1555,7 +1593,7 @@ function amsWandklok(datum, tijd){
 }
 
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.13.6';
+const APP_VERSIE = '1.14.3';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -4839,6 +4877,58 @@ function marshalBerekenFlightPositie(f, nu){
   return { flight: f, volgorde, cum, indexPositie, indexWeergave, fysiekeHoleNu, restFractieNu, voltooid, heeftMelding, conclusie, gestartNog };
 }
 
+/* ---- "Niet voorbij laten gaan" (v1.14.0, gelijk aan GoyerFlow v0.24.0 begrensInhalen) ----
+   Kay (11 november 2026): een snellere flight (bijv. een 2-bal, kortere schema-rondetijd) die volgens het
+   schema verder op de baan zou staan dan een EERDER gestarte, tragere flight (3-bal) is fysiek onmogelijk:
+   hij loopt vast achter die flight. Voor flights ZONDER melding (pure schema-extrapolatie) wordt de
+   weergavepositie begrensd tot MARSHAL_INHAAL_MIN_GAT_MINUTEN achter de dichtstbijzijnde eerder gestarte
+   flight die nog op de baan loopt, binnen dezelfde startgroep (start hole 1 of 10, uit volgorde[0]).
+   Flights MET melding worden nooit begrensd (een melding is echte informatie). Gevolg, bewust: de
+   begrensde flight telt als "achter" t.o.v. zijn EIGEN schema (conclusie herberekend) en de flight ervoor
+   kan via de knelpunten-analyse een Ophouder-ring krijgen, ook als die zelf op schema loopt — een signaal
+   om te gaan kijken, geen vaststelling. Het minimale gat is niet 0: marshalBepaalVoorganger() telt alleen
+   een flight als voorganger die STRIKT verder staat. MARSHAL_INHAAL_MIN_GAT_MINUTEN = 1 is een technische,
+   NIET door Kay bevestigde eerste schatting. Alleen toegepast op de Baan Flow-kaart. */
+const MARSHAL_INHAAL_MIN_GAT_MINUTEN = 1;
+function marshalBegrensInhalen(posities){
+  const groepen = new Map();
+  posities.forEach(p=>{
+    const sleutel = p.volgorde[0];
+    if(!groepen.has(sleutel)) groepen.set(sleutel, []);
+    groepen.get(sleutel).push(p);
+  });
+  const eind = new Map();
+  groepen.forEach(groep=>{
+    const start = p => tijdNaarMinuten(p.flight.starttijd);
+    const gesorteerd = groep.slice().sort((a,b)=> start(a)-start(b));
+    let vorige = null;
+    gesorteerd.forEach(p=>{
+      if(p.gestartNog){ eind.set(p.flight.id, p); return; }
+      let resultaat = p;
+      // v1.14.2: ook een flight die volgens het schema al voltooid zou zijn wordt begrensd zolang een
+      // eerder gestarte flight nog loopt (niet voorbijgaan geldt ook voor de finish). Een handmatig
+      // "klaar" gemelde flight (f.klaar) en een flight met melding blijven ongemoeid.
+      if(vorige && !p.heeftMelding && !p.flight.klaar && start(vorige) < start(p)){
+        const capMin = minutenVoorIndex(vorige.indexWeergave, p.cum) - MARSHAL_INHAAL_MIN_GAT_MINUTEN;
+        if(minutenVoorIndex(p.indexWeergave, p.cum) > capMin){
+          const idx = Math.max(0, indexOpElapsed(capMin, p.cum));
+          const klemIndex = Math.max(0, Math.min(p.volgorde.length - 1e-6, idx));
+          const conclusie = marshalConclusieVoor(minutenVoorIndex(idx, p.cum) - minutenVoorIndex(p.indexPositie, p.cum));
+          resultaat = Object.assign({}, p, {
+            indexWeergave: idx,
+            fysiekeHoleNu: p.volgorde[Math.min(p.volgorde.length-1, Math.floor(klemIndex))],
+            restFractieNu: klemIndex - Math.floor(klemIndex),
+            conclusie, begrensd: true, voltooid: idx >= p.volgorde.length
+          });
+        }
+      }
+      eind.set(p.flight.id, resultaat);
+      if(!resultaat.voltooid) vorige = resultaat; // een afgeronde flight staat niet meer op de baan
+    });
+  });
+  return posities.map(p=>eind.get(p.flight.id));
+}
+
 /* ---- Knelpunten-classificatie (voorganger/gat/trend/kop-isolatie) — poort uit GoyerFlow's
    bepaalVoorganger/gatNaarVoorgangerMinuten/isOpgehouden/gatTrend (index.html:3356-3457, v0.23.0-
    v0.23.2). Omdat marshalBerekenFlightPositie() hierboven al fysiek is (fysiekeHoleNu/restFractieNu
@@ -5185,7 +5275,7 @@ if (window.matchMedia) {
 
 function renderBaanFlow(flights){
   const nu = new Date();
-  const allePosities = flights.map(f => marshalBerekenFlightPositie(f, nu));
+  const allePosities = marshalBegrensInhalen(flights.map(f => marshalBerekenFlightPositie(f, nu)));
   const zichtbaar = allePosities.filter(marshalBaanflowIsZichtbaar);
   const knelpuntPerId = marshalBouwKnelpuntPerId(zichtbaar);
 
@@ -5213,19 +5303,19 @@ function renderBaanFlow(flights){
   if(subEl) subEl.textContent = subtekst;
 
   const markersHtml = zichtbaar.map(positie=>{
-    const { flight, fysiekeHoleNu, restFractieNu, conclusie, heeftMelding } = positie;
+    const { flight, fysiekeHoleNu, restFractieNu, conclusie, heeftMelding, begrensd } = positie;
     const punt = baanflowPuntVoor(fysiekeHoleNu, restFractieNu);
     if(!punt) return ''; // zou niet moeten voorkomen, holenummers 1-18 hebben allemaal een pad
     const kleur = conclusie ? conclusie.kleur : 'var(--blue)';
     const statusLabel = { voor_schema:'voor op schema', op_schema:'op schema', achter:'iets achter op schema', ver_achter:'ver achter op schema' };
-    const statusTekst = conclusie ? statusLabel[conclusie.key] : (heeftMelding ? '' : 'nog geen melding');
+    const statusTekst = conclusie ? statusLabel[conclusie.key] + (begrensd ? ' (geschat: vlak achter de flight ervoor)' : '') : (heeftMelding ? '' : 'nog geen melding');
     const knelpunt = knelpuntPerId.get(flight.id);
     const knelpuntClass = knelpunt.houdtOp ? ' houdtop' : '';
     const schaal = marshalKnelpuntSchaal(flight.id, knelpuntPerId);
     const trendPijl = knelpunt.trend && knelpunt.houdtOp ? KNELPUNT_TREND_PIJL[knelpunt.trend] : '';
     const knelpuntTekst = knelpunt.opgehouden
-      ? ` · opgehouden door voorganger (ca. ${Math.round(knelpunt.gat)} min)${knelpunt.trend ? ', ' + KNELPUNT_TREND_LABEL[knelpunt.trend] : ''}`
-      : knelpunt.houdtOp ? ' · houdt achterligger op' : '';
+      ? ' · mogelijk opgehouden door de flight ervoor'
+      : knelpunt.houdtOp ? ' · houdt mogelijk de flight achter zich op' : '';
     const namen = (flight.namen||[]).join(', ') || 'onbekende flight';
     const titel = `${namen} · Hole ${fysiekeHoleNu} · ${statusTekst}${knelpuntTekst}`;
     const label = flight.n_spelers != null ? String(flight.n_spelers) : String((flight.namen||[]).length || '');
@@ -5360,12 +5450,12 @@ function renderBaanFlowDetail(zichtbaar, knelpuntPerId){
   const knelpunt = knelpuntPerId.get(positie.flight.id);
   const namen = (positie.flight.namen||[]).join(', ') || 'onbekende flight';
   const conclusieLabel = { voor_schema:'Voor op schema', op_schema:'Op schema', achter:'Iets achter op schema', ver_achter:'Ver achter op schema' };
-  const conclusieTekst = positie.conclusie ? conclusieLabel[positie.conclusie.key] : (positie.heeftMelding ? '' : 'Nog geen melding binnen.');
+  const conclusieTekst = positie.conclusie ? conclusieLabel[positie.conclusie.key] + (positie.begrensd ? ' (geschat: vlak achter de flight ervoor)' : '') : (positie.heeftMelding ? '' : 'Nog geen melding binnen.');
   let knelpuntRegel = '';
   if(knelpunt && knelpunt.opgehouden){
-    knelpuntRegel = `<p style="font-size:.8rem;margin-top:8px;color:var(--amber);font-weight:600">Wordt opgehouden door de flight voor zich (ca. ${Math.round(knelpunt.gat)} min).</p>`;
+    knelpuntRegel = `<p style="font-size:.8rem;margin-top:8px;color:var(--amber);font-weight:600">Wordt mogelijk opgehouden door de flight ervoor.</p>`;
   } else if(knelpunt && knelpunt.houdtOp){
-    knelpuntRegel = `<p style="font-size:.8rem;margin-top:8px;color:var(--magenta);font-weight:600">Houdt de flight erachter op.</p>`;
+    knelpuntRegel = `<p style="font-size:.8rem;margin-top:8px;color:var(--magenta);font-weight:600">Houdt mogelijk de flight achter zich op.</p>`;
   }
   const kaartEl = document.getElementById('baanflowCard');
   const overlay = document.createElement('div');
@@ -5759,8 +5849,9 @@ function renderTracker(){
     if(a.aankomend !== b.aankomend) return a.aankomend ? -1 : 1;
     // Beide aankomend: laatste start eerst (bovenaan = verste weg, onderaan = eerstvolgende)
     if(a.aankomend && b.aankomend) return tijdNaarMinuten(b.f.starttijd) - tijdNaarMinuten(a.f.starttijd);
-    // Beide actief: normale sortering op starttijd
-    return tijdNaarMinuten(a.f.starttijd) - tijdNaarMinuten(b.f.starttijd);
+    // Beide actief, zelfde hole: wie LATER startte staat verder achteraan op de baan en komt bovenaan
+    // (v1.14.0 — was oplopend op starttijd; gelijk aan GoyerFlow v0.24.0, Kay 11 november 2026)
+    return tijdNaarMinuten(b.f.starttijd) - tijdNaarMinuten(a.f.starttijd);
   });
 
   // Marshal view — met zoekfilter
@@ -5797,6 +5888,14 @@ function renderTracker(){
   }
 }
 
+// v1.14.3: "18 holes vanaf hole 10" (gelijk aan GoyerFlow rondeTekst, v0.24.3) — zelfde aantal-holes- en
+// starthole-conventie als de bestaande rijcode ('south' = 6 holes, vanaf hole 1).
+function marshalRondeTekst(rt){
+  rt = rt || '18holes';
+  const aantal = (rt === '18holes' || rt === '18holes_vanaf10') ? 18 : rt === 'south' ? 6 : 9;
+  const start = (rt === '9holes_achter' || rt === '18holes_vanaf10') ? 10 : 1;
+  return `${aantal} holes vanaf hole ${start}`;
+}
 function renderFlightItem(f, klikbaar){
   const nu = new Date();
   const nuMin = nu.getHours()*60+nu.getMinutes();
@@ -5886,7 +5985,7 @@ function renderFlightItem(f, klikbaar){
         <div class="fi-naam" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">${namenHtml}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:3px">
-        <div class="fi-meta">🕐 ${f.starttijd?.slice(0,5)||'—'} · Hole ${holeWeergave}/${aantalHoles} · ${statusTekst}</div>
+        <div class="fi-meta">🕐 ${f.starttijd?.slice(0,5)||'—'} · ${marshalRondeTekst(rt)} · ${statusTekst}</div>
         ${toernooi}
       </div>
       <div class="fi-bar">
@@ -5914,8 +6013,7 @@ function renderFlightItemAankomend(f){
         <div class="fi-naam" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">${namenHtml}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:3px">
-        <div class="fi-meta">🕐 ${starttijd}</div>
-        <div class="fi-meta" style="color:var(--blue);font-weight:600">${rondeLabel}</div>
+        <div class="fi-meta">🕐 ${starttijd} · ${marshalRondeTekst(rt)}</div>
         <div class="fi-meta"><span style="color:var(--tl)">start om ${starttijd}</span></div>
         ${f.toernooi_naam ? `<span style="font-size:.7rem;color:var(--blue);font-weight:600">🏆 ${f.toernooi_naam}</span>` : ''}
       </div>
@@ -6051,7 +6149,7 @@ function openHolePopup(flightId){
         <div>
           <div class="hole-popup-titel" style="margin-bottom:2px">${(namen0[0]||'—').split(' ').slice(-1)[0]}${namen0.length>1?' + '+(namen0.length-1)+' spelers':''}</div>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:var(--tl)">
-            Start ${f.starttijd?.slice(0,5)||'—'} &nbsp;·&nbsp; Hole ${startHole0} &nbsp;·&nbsp; ${maxHoles0} holes
+            🕐 ${f.starttijd?.slice(0,5)||'—'} &nbsp;·&nbsp; ${marshalRondeTekst(rt0)}
           </div>
           ${f.toernooi_naam ? '<div style="font-size:.75rem;color:var(--blue);font-weight:600;margin-top:3px">🏆 ' + f.toernooi_naam + '</div>' : ''}
         </div>
@@ -6149,7 +6247,7 @@ function openHolePopup(flightId){
       <div>
         <div class="hole-popup-titel" style="margin-bottom:2px">${(namen[0]||'—').split(' ').slice(-1)[0]}${namen.length>1?' + '+(namen.length-1)+' spelers':''}</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:var(--tl)">
-          Start ${f.starttijd?.slice(0,5)||'—'} &nbsp;·&nbsp; Hole ${startHole} &nbsp;·&nbsp; ${maxHoles} holes
+          🕐 ${f.starttijd?.slice(0,5)||'—'} &nbsp;·&nbsp; ${marshalRondeTekst(rt)}
         </div>
         ${f.toernooi_naam ? '<div style="font-size:.75rem;color:var(--blue);font-weight:600;margin-top:3px">🏆 ' + f.toernooi_naam + '</div>' : ''}
       </div>

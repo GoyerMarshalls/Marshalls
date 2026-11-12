@@ -350,6 +350,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
   font-size:13px;font-weight:800;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);
   cursor:pointer;z-index:2}
 .baanflowmarker.houdtop{box-shadow:0 0 0 3px var(--magenta),0 2px 6px rgba(0,0,0,0.35)}
+/* v1.14.6: recent gemelde positie (< 30 min) = gekleurde rand i.p.v. de witte. */
+:root{--meldingrand:#E8B923}
+.baanflowmarker.meldingvers{border-color:var(--meldingrand)}
+.hole-cirkel.meldingvers{box-shadow:0 0 0 3px var(--meldingrand)}
 /* v1.13.5 (Kay's verzoek): de Baan Flow-kaart ziet er nu op elk scherm exact zo uit als in GoyerFlow
    (iPad/tablet: smalle witte kaart in het midden, plus de volledig-scherm-weergave). De kleuren,
    lettergroottes en kaartopmaak hieronder zijn daarom GoyerFlow's waarden, gescoped op #baanflowCard
@@ -426,11 +430,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 .baanflowkaartwrap.baanflowingezoomd{touch-action:none;cursor:grab}
 .baanflowzoomlaag{position:absolute;inset:0;transform-origin:0 0}
 .baanflowzoomlaag .baanflowmarker{transform:translate(-50%,-50%) scale(var(--bf-inv,1))}
-.baanflowzoomknoppen{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px;z-index:5}
-.baanflowzoombtn{width:34px;height:34px;border-radius:50%;border:1px solid #ECE7DA;background:rgba(255,255,255,0.94);
-  box-shadow:0 1px 4px rgba(0,0,0,0.18);font-family:inherit;font-size:18px;font-weight:700;line-height:1;
-  color:#6B6558;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
-.baanflowzoombtn[data-bfzoom="reset"]{font-size:12px}
 .baanflowdetailoverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
   justify-content:center;padding:18px;z-index:50}
 .baanflowdetailmodal{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:420px;
@@ -1263,6 +1262,27 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 /* ================================================================================================
+   v1.14.6 (12 november 2026) — gelijk aan GoyerFlow v0.24.7: een gemelde positie (door een marshal in de Marshal App)
+   blijft maximaal 30 minuten GELDIG (MARSHAL_MELDING_GELDIG_MINUTEN, Kay): gouden rand om de flight-cirkel (Baan Flow-
+   kaart en Tracker-lijst) en vrijgesteld van "niet voorbij laten gaan"; daarna verdwijnt de rand en geldt de begrenzing
+   weer, de positie blijft doorgerekend vanaf de melding. De fout in de status-berekening (bevroren melding vs. schema
+   nu) zat alleen in GoyerFlow; de Marshal App vergeleek al de doorgerekende positie met het schema. Randkleur goud
+   (#E8B923) boven zwart, zie GoyerFlow. Geen rekenwijziging in de status zelf.
+   ============================================================================================ */
+/* ================================================================================================
+   v1.14.5 (11 november 2026) — Baan Flow-kaart: een flight ZONDER melding is nu groen (op schema, de schema-aanname)
+   i.p.v. blauw (gelijk aan GoyerFlow v0.24.6). Blauw betekent in de legenda "Snel" (minstens 5 minuten voor), de
+   standaardkleur was dus misleidend. Een door marshalBegrensInhalen() afgeleide vertraging blijft oranje/rood.
+   De Marshal-Tracker-LIJST is niet gewijzigd: die toont flights zonder meting bewust grijs (eigen, oudere conventie).
+   ============================================================================================ */
+/* ================================================================================================
+   v1.14.4 (11 november 2026) — gelijk aan GoyerFlow v0.24.5: (1) de zoomknoppen +, − en 1× zijn van de Baan Flow-kaart
+   verwijderd (Kay); inzoomen blijft met knijpen, slepen (alleen ingezoomd), dubbeltikken en het scrollwiel/trackpad.
+   (2) De Volledig-scherm-knop verschijnt niet meer op een telefoon in liggende stand (scherm lager dan 500 px in
+   liggende stand), naast de bestaande regel voor staand. Op iPad/tablet blijft hij; een actieve volledig-scherm-
+   weergave houdt altijd een uitknop. Alleen bediening.
+   ============================================================================================ */
+/* ================================================================================================
    v1.14.3 (11 november 2026) — weergave ronde (gelijk aan GoyerFlow v0.24.3): Tracker-rijen (actief en
    aankomend) en beide flight-popups tonen "🕐 [starttijd] · [aantal] holes vanaf hole [starthole]" (bijv.
    "🕐 11:52 · 18 holes vanaf hole 10") i.p.v. "Hole 9/18" resp. "Start · Hole 7 · 18 holes" (Kay: "Hole 9/18" las bij
@@ -1593,7 +1613,7 @@ function amsWandklok(datum, tijd){
 }
 
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.14.3';
+const APP_VERSIE = '1.14.6';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -4821,6 +4841,10 @@ function marshalConclusieVoor(deltaMinuten){
 // getHoleVolgorde()/cumTijdenVolgorde()/tijdNaarMinuten() ONGEWIJZIGD. In tegenstelling tot
 // GoyerFlow heeft Marshal App geen round-relative/fysiek-onderscheid nodig: getHoleVolgorde() geeft
 // al de fysieke holevolgorde terug, dus fysiekeHoleNu/restFractieNu hieronder zijn al fysiek.
+// v1.14.6 (Kay): een gemelde positie — via een marshal in de Marshal App — blijft maximaal 30 minuten GELDIG: gekleurde
+// rand om de flight-cirkel en vrijgesteld van de "niet voorbij laten gaan"-regel; daarna blijft de positie doorgerekend
+// vanaf de melding, maar verdwijnt de rand en geldt de begrenzing weer.
+const MARSHAL_MELDING_GELDIG_MINUTEN = 30;
 function marshalBerekenFlightPositie(f, nu){
   nu = nu || new Date();
   const nuMin = nu.getHours()*60 + nu.getMinutes();
@@ -4845,6 +4869,7 @@ function marshalBerekenFlightPositie(f, nu){
   // v1.11.00), maar behoudt de fractie i.p.v. die naar een heel holenummer af te ronden.
   let indexWeergave = indexPositie;
   let heeftMelding = false;
+  let meldingGeldig = false; // v1.14.6: melding < MARSHAL_MELDING_GELDIG_MINUTEN oud
   if(!gestartNog && f.laatste_hole && f.laatste_update){
     const gemeldMin = tijdNaarMinuten(f.laatste_update);
     const sindsGemeld = nuMin - gemeldMin;
@@ -4857,6 +4882,7 @@ function marshalBerekenFlightPositie(f, nu){
         const minPerHole = cum[1] - cum[0];
         const stappenFractie = minPerHole > 0 ? sindsGemeld / minPerHole : 0;
         heeftMelding = true;
+        meldingGeldig = sindsGemeld <= MARSHAL_MELDING_GELDIG_MINUTEN;
         indexWeergave = startPos + stappenFractie;
       }
     }
@@ -4874,7 +4900,7 @@ function marshalBerekenFlightPositie(f, nu){
   const fysiekeHoleNu = volgorde[Math.min(volgorde.length-1, Math.floor(klemIndex))];
   const restFractieNu = klemIndex - Math.floor(klemIndex);
 
-  return { flight: f, volgorde, cum, indexPositie, indexWeergave, fysiekeHoleNu, restFractieNu, voltooid, heeftMelding, conclusie, gestartNog };
+  return { flight: f, volgorde, cum, indexPositie, indexWeergave, fysiekeHoleNu, restFractieNu, voltooid, heeftMelding, meldingGeldig, conclusie, gestartNog };
 }
 
 /* ---- "Niet voorbij laten gaan" (v1.14.0, gelijk aan GoyerFlow v0.24.0 begrensInhalen) ----
@@ -4908,7 +4934,7 @@ function marshalBegrensInhalen(posities){
       // v1.14.2: ook een flight die volgens het schema al voltooid zou zijn wordt begrensd zolang een
       // eerder gestarte flight nog loopt (niet voorbijgaan geldt ook voor de finish). Een handmatig
       // "klaar" gemelde flight (f.klaar) en een flight met melding blijven ongemoeid.
-      if(vorige && !p.heeftMelding && !p.flight.klaar && start(vorige) < start(p)){
+      if(vorige && !p.meldingGeldig && !p.flight.klaar && start(vorige) < start(p)){
         const capMin = minutenVoorIndex(vorige.indexWeergave, p.cum) - MARSHAL_INHAAL_MIN_GAT_MINUTEN;
         if(minutenVoorIndex(p.indexWeergave, p.cum) > capMin){
           const idx = Math.max(0, indexOpElapsed(capMin, p.cum));
@@ -5133,8 +5159,6 @@ function baanflowZoomToepassen() {
   laag.style.setProperty("--bf-inv", (1 / z.s).toFixed(4));
   const ingezoomd = z.s > 1.001;
   wrap.classList.toggle("baanflowingezoomd", ingezoomd);
-  const reset = wrap.querySelector('[data-bfzoom="reset"]');
-  if (reset) reset.style.display = ingezoomd ? "" : "none";
 }
 // Zoom naar niveau s2 rond het punt (px,py) in kaart-pixels (relatief aan de linkerbovenhoek van de kaart).
 function baanflowZoomRond(s2, px, py) {
@@ -5149,22 +5173,6 @@ function baanflowZoomRond(s2, px, py) {
   z.fy = pfy - (pfy - z.fy) * k;
   z.s = s2;
   baanflowZoomToepassen();
-}
-function baanflowZoomReset() {
-  baanflowZoom.s = 1; baanflowZoom.fx = 0; baanflowZoom.fy = 0;
-  baanflowZoomToepassen();
-}
-function baanflowZoomKnoppen() {
-  const d = document.createElement("div");
-  d.className = "baanflowzoomknoppen";
-  [["in", "+", "Inzoomen"], ["uit", "−", "Uitzoomen"], ["reset", "1×", "Terug naar de hele kaart"]].forEach(([k, t, titel]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "baanflowzoombtn"; b.setAttribute("data-bfzoom", k);
-    b.textContent = t; b.title = titel; b.setAttribute("aria-label", titel);
-    if (k === "reset") b.style.display = "none";
-    d.appendChild(b);
-  });
-  return d;
 }
 // Koppelt de zoom-bediening aan (een nieuwe) kaart-wrap en past de bewaarde zoomstand toe. Veilig om bij elke
 // verversing opnieuw aan te roepen: de gebeurtenis-luisteraars worden per wrap-element maar één keer gezet.
@@ -5231,7 +5239,6 @@ function baanflowZoomKoppel(wrap) {
       }
     };
     wrap.addEventListener("pointerdown", (e) => {
-      if (e.target.closest && e.target.closest(".baanflowzoombtn")) return;
       if (ptrs.size === 0) baanflowZoomBewogen = false;
       ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (ptrs.size === 1) {
@@ -5246,13 +5253,6 @@ function baanflowZoomKoppel(wrap) {
     wrap.addEventListener("click", (e) => {
       if (baanflowZoomBewogen) { e.stopPropagation(); e.preventDefault(); baanflowZoomBewogen = false; }
     }, true);
-    wrap.addEventListener("click", (e) => {
-      const knop = e.target.closest && e.target.closest("[data-bfzoom]");
-      if (!knop) return;
-      const r = wrap.getBoundingClientRect(), k = knop.getAttribute("data-bfzoom");
-      if (k === "reset") baanflowZoomReset();
-      else baanflowZoomRond(baanflowZoom.s * (k === "in" ? 1.6 : 1 / 1.6), r.width / 2, r.height / 2);
-    });
     wrap.addEventListener("wheel", (e) => {
       e.preventDefault();
       const r = wrap.getBoundingClientRect();
@@ -5262,13 +5262,15 @@ function baanflowZoomKoppel(wrap) {
   }
   baanflowZoomToepassen();
 }
-// Telefoon in staande stand: "Volledig scherm" voegt daar niets toe (de kaart wordt niet groter) — knop verbergen,
+// Telefoon (staand én liggend): "Volledig scherm" voegt daar niets toe (de kaart wordt niet groter) — knop verbergen,
 // tenzij volledig scherm al actief is (anders zou je er niet meer uit kunnen).
+// Telefoon = smal scherm in staande stand, of laag scherm in liggende stand (iPhone/Samsung liggend: hoogte < ~430 px).
+const BAANFLOW_TELEFOON_QUERY = "(max-width:599px) and (orientation:portrait), (max-height:500px) and (orientation:landscape)";
 function baanflowFsKnopMoetVerborgen() {
-  return !!(window.matchMedia && window.matchMedia("(max-width:599px) and (orientation:portrait)").matches);
+  return !!(window.matchMedia && window.matchMedia(BAANFLOW_TELEFOON_QUERY).matches);
 }
 if (window.matchMedia) {
-  const mq = window.matchMedia("(max-width:599px) and (orientation:portrait)");
+  const mq = window.matchMedia(BAANFLOW_TELEFOON_QUERY);
   const bijwerken = () => { if (typeof baanflowFullscreenKnopBijwerken === "function") baanflowFullscreenKnopBijwerken(); };
   if (mq.addEventListener) mq.addEventListener("change", bijwerken); else if (mq.addListener) mq.addListener(bijwerken);
 }
@@ -5306,7 +5308,7 @@ function renderBaanFlow(flights){
     const { flight, fysiekeHoleNu, restFractieNu, conclusie, heeftMelding, begrensd } = positie;
     const punt = baanflowPuntVoor(fysiekeHoleNu, restFractieNu);
     if(!punt) return ''; // zou niet moeten voorkomen, holenummers 1-18 hebben allemaal een pad
-    const kleur = conclusie ? conclusie.kleur : 'var(--blue)';
+    const kleur = conclusie ? conclusie.kleur : 'var(--gl)';
     const statusLabel = { voor_schema:'voor op schema', op_schema:'op schema', achter:'iets achter op schema', ver_achter:'ver achter op schema' };
     const statusTekst = conclusie ? statusLabel[conclusie.key] + (begrensd ? ' (geschat: vlak achter de flight ervoor)' : '') : (heeftMelding ? '' : 'nog geen melding');
     const knelpunt = knelpuntPerId.get(flight.id);
@@ -5319,7 +5321,7 @@ function renderBaanFlow(flights){
     const namen = (flight.namen||[]).join(', ') || 'onbekende flight';
     const titel = `${namen} · Hole ${fysiekeHoleNu} · ${statusTekst}${knelpuntTekst}`;
     const label = flight.n_spelers != null ? String(flight.n_spelers) : String((flight.namen||[]).length || '');
-    return `<div class="baanflowmarker${knelpuntClass}" style="left:${punt.xPct}%;top:${punt.yPct}%;background:${kleur};--kp-schaal:${schaal.toFixed(2)}" title="${escapeHtml(titel)}" data-flight-id="${escapeHtml(flight.id)}">${escapeHtml(label)}${trendPijl ? ' '+trendPijl : ''}</div>`;
+    return `<div class="baanflowmarker${knelpuntClass}${positie.meldingGeldig ? ' meldingvers' : ''}" style="left:${punt.xPct}%;top:${punt.yPct}%;background:${kleur};--kp-schaal:${schaal.toFixed(2)}" title="${escapeHtml(titel)}" data-flight-id="${escapeHtml(flight.id)}">${escapeHtml(label)}${trendPijl ? ' '+trendPijl : ''}</div>`;
   }).join('');
 
   const wrapEl = document.getElementById('baanflowKaartWrap');
@@ -5328,7 +5330,6 @@ function renderBaanFlow(flights){
     const imgStyle = `width:${((BAANFLOW_IMG_W/BAANFLOW_WRAP_W)*100).toFixed(4)}%;height:${((BAANFLOW_IMG_H/BAANFLOW_WRAP_H)*100).toFixed(4)}%;`
       + `transform:translate(-50%,-50%) rotate(${BAANFLOW_FIJNROTATIE_GRADEN}deg)`;
     wrapEl.innerHTML = `<div class="baanflowzoomlaag"><img class="baanflowkaart" src="data:image/webp;base64,${BAANFLOW_MAP_B64}" alt="North Course" style="${imgStyle}"/>` + markersHtml + `</div>`;
-    wrapEl.appendChild(baanflowZoomKnoppen());
     wrapEl.querySelectorAll('.baanflowmarker').forEach(node=>{
       node.addEventListener('click', ()=> openBaanFlowDetail(node.getAttribute('data-flight-id'), zichtbaar, knelpuntPerId));
     });
@@ -5906,6 +5907,9 @@ function renderFlightItem(f, klikbaar){
   const isKlaar = f.klaar || nuMin >= startMin + verwachteRondetijd(f) || vwRaw === 99;
 
   const heeftMeting = !!f.laatste_hole;
+  // v1.14.6: melding < 30 min oud (zelfde regel als op de Baan Flow-kaart) = gekleurde rand om de cirkel.
+  const sindsMeldingMin = (f.laatste_hole && f.laatste_update) ? nuMin - tijdNaarMinuten(f.laatste_update) : null;
+  const meldingVers = !isKlaar && sindsMeldingMin != null && sindsMeldingMin >= 0 && sindsMeldingMin <= MARSHAL_MELDING_GELDIG_MINUTEN;
   const st = isKlaar ? 'gray' : (flightStatus(f) === 'klaar' ? 'gray' : flightStatus(f));
   const vw = isKlaar ? null : verwachteHoleNu(f);
   const th = isKlaar ? null : verwachteHoleTheorie(f);
@@ -5979,7 +5983,7 @@ function renderFlightItem(f, klikbaar){
   const holeWeergave = isKlaar ? volgorde[volgorde.length-1] : (vw && vw < 99 ? vw : (f.laatste_hole || volgorde[0]));
 
   return `<div class="flight-item fl-${st}" ${onclick} style="align-items:center;${toernooiBg}">
-    <div class="hole-cirkel ${cirkelKls}">${cirkelGetal}</div>
+    <div class="hole-cirkel ${cirkelKls}${meldingVers ? ' meldingvers' : ''}">${cirkelGetal}</div>
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
         <div class="fi-naam" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">${namenHtml}</div>

@@ -1262,6 +1262,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cr);color:var(--td)
 
 <script>
 /* ================================================================================================
+   v1.14.7 (13 november 2026) — gelijk aan GoyerFlow v0.24.8, maar hier alleen PREVENTIEF: in GoyerFlow werd de zoomstand NaN als de
+   20-seconden-verversing het kaart-element midden in een knijpgebaar verving (de kaart stond stil, de rondjes schaalden door).
+   De Marshal App vervangt het kaart-element niet (alleen de inhoud) en vertoonde de fout bij nabootsing niet. Wel dezelfde
+   bescherming toegevoegd: gebaren gebruiken altijd het actuele kaart-element en een niet-eindige zoomstand wordt teruggezet.
    v1.14.6 (12 november 2026) — gelijk aan GoyerFlow v0.24.7: een gemelde positie (door een marshal in de Marshal App)
    blijft maximaal 30 minuten GELDIG (MARSHAL_MELDING_GELDIG_MINUTEN, Kay): gouden rand om de flight-cirkel (Baan Flow-
    kaart en Tracker-lijst) en vrijgesteld van "niet voorbij laten gaan"; daarna verdwijnt de rand en geldt de begrenzing
@@ -1613,7 +1617,7 @@ function amsWandklok(datum, tijd){
 }
 
 // ─── CONFIG ───────────────────────────────────────────────
-const APP_VERSIE = '1.14.6';
+const APP_VERSIE = '1.14.7';
 
 // Teecontrol kleurcodering → CSS kleuren
 const TC_KLEUR_MAP = {
@@ -5143,6 +5147,8 @@ let baanflowZoomBewogen = false;
 
 function baanflowZoomKlem() {
   const z = baanflowZoom;
+  // Een niet-eindig getal (NaN/Infinity) zou de zoomstand voorgoed bederven: terug naar niet ingezoomd.
+  if (!isFinite(z.s) || !isFinite(z.fx) || !isFinite(z.fy)) { z.s = 1; z.fx = 0; z.fy = 0; }
   z.s = Math.max(1, Math.min(BAANFLOW_ZOOM_MAX, z.s));
   z.fx = Math.max(1 - z.s, Math.min(0, z.fx));
   z.fy = Math.max(1 - z.s, Math.min(0, z.fy));
@@ -5190,7 +5196,9 @@ function baanflowZoomKoppel(wrap) {
     const bewegen = (ev) => {
       const p = ptrs.get(ev.pointerId);
       if (!p) return;
-      const r = wrap.getBoundingClientRect();
+      // Na een verversing (elke 20 s) is `wrap` mogelijk vervangen door een nieuw element: altijd de actuele nemen.
+      const r = (baanflowZoomWrap || wrap).getBoundingClientRect();
+      if (!r.width || !r.height) return;
       if (ptrs.size === 2) {
         p.x = ev.clientX; p.y = ev.clientY;
         const m = midden();
@@ -5229,7 +5237,7 @@ function baanflowZoomKoppel(wrap) {
         if (ev.type === "pointerup" && start && !baanflowZoomBewogen && !start.opMarker && Date.now() - start.t < 350) {
           const nu = Date.now();
           if (laatsteTik && nu - laatsteTik.t < 350 && Math.hypot(ev.clientX - laatsteTik.x, ev.clientY - laatsteTik.y) < 30) {
-            const r = wrap.getBoundingClientRect();
+            const r = (baanflowZoomWrap || wrap).getBoundingClientRect();
             baanflowZoomRond(baanflowZoom.s > 1.5 ? 1 : 2.5, ev.clientX - r.left, ev.clientY - r.top);
             laatsteTik = null;
           } else {
